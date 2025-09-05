@@ -79,42 +79,84 @@ README.md                # 📖 Documentation
 
 ---
 
+## 📋 Prerequisites
+
+Before setting up the project, make sure you have the following installed:
+
+* 🖥️ **Git** → [Download Git](https://git-scm.com/)
+* 🟢 **Node.js (>=18.x)** → [Download Node.js](https://nodejs.org/)
+* 📦 **npm (comes with Node.js)** → Check with:
+
+  ```bash
+  node -v
+  npm -v
+  ```
+* 🔑 **OpenWeatherMap API Key** → [Get your free API key](https://openweathermap.org/api)
+
+---
+
 ## 🏁 Getting Started
 
-1️⃣ **Clone the repository**
+Follow these steps to set up the project on your local machine:
+
+### 1️⃣ Clone the Repository
 
 ```bash
+# Clone the repository from GitHub
 git clone https://github.com/your-username/weather-dashboard.git
+
+# Move into the project directory
 cd weather-dashboard
 ```
 
-2️⃣ **Install dependencies**
+👉 If you forked the project, replace `your-username` with your GitHub username.
+
+---
+
+### 2️⃣ Install Dependencies
+
+Install required packages:
 
 ```bash
 npm install
 ```
 
-3️⃣ **Set up environment variables**
-Copy `.env.example` → `.env` and add your API key:
+---
 
-```bash
-VITE_WEATHER_API_KEY=your_api_key_here
-```
+### 3️⃣ Configure Environment Variables
 
-4️⃣ **Run the development server**
+1. Copy the provided `.env.example` file:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Open `.env` in a text editor and add your API key:
+
+   ```bash
+   VITE_WEATHER_API_KEY=your_api_key_here
+   ```
+
+---
+
+### 4️⃣ Run the Development Server
 
 ```bash
 npm run dev
 ```
 
-Open 👉 `http://localhost:5173` in your browser.
+Then open 👉 `http://localhost:5173` in your browser.
 
-5️⃣ **Build for production**
+---
+
+### 5️⃣ Build for Production
 
 ```bash
 npm run build
 npm run preview
 ```
+
+Your app will be served at 👉 `http://localhost:4173`.
 
 ---
 
