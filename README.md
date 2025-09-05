@@ -1,64 +1,170 @@
-# .
+# 🌦️ Weather Dashboard
 
-This template should help get you started developing with Vue 3 in Vite.
+A **fast**, **installable**, and **user-friendly** weather application that provides real-time conditions, forecasts, saved favorites, and a smooth experience across all devices.
 
-## Recommended IDE Setup
+---
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## 🚀 Vision & Goals
 
-## Type Support for `.vue` Imports in TS
+**🎯 Purpose:**
+Deliver a quick, reliable, and accessible way to check weather conditions, forecasts, and manage favorite locations.
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+**👥 Target Users:**
 
-## Customize configuration
+* 🌍 Individuals who regularly check weather updates.
+* ⭐ Users who prefer storing frequently accessed locations.
+* 🎨 Users who want customizable themes and accessibility options.
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+**📌 Success Criteria:**
 
-## Project Setup
+* ⚡ Sub-second interactions.
+* 📲 Fully installable as a Progressive Web App (PWA).
+* ♿ Accessible user interface (WCAG compliance).
+* 🛡️ Resilient error handling for network and API failures.
 
-```sh
+---
+
+## 🛠️ Tech Stack
+
+* 🖥️ **Frontend Framework:** Vue 3 + Vite
+* 📦 **State Management:** Pinia
+* 🎨 **UI Libraries:** Vuetify + Tailwind CSS
+* 🧪 **Testing:** Vitest (unit) + Playwright (end-to-end)
+* ⚙️ **Build & Deployment:** Vite + static hosting (SPA fallback)
+* 📲 **PWA Support:** Workbox + Web App Manifest
+
+---
+
+## 📂 Project Structure
+
+```
+public/                  # 📁 Static files
+├─ icons/                # 🖼️ PWA icons & shortcuts
+├─ robots.txt            # 🤖 Indexing rules
+├─ manifest.json         # 📲 Web app manifest
+└─ index.html            # 🌐 Application HTML shell
+
+src/                     # 🧩 Application source
+├─ app/                  # ⚙️ App-level setup
+│   ├─ router/           # 🛣️ Routes & guards
+│   ├─ store/            # 📦 Pinia stores (weather, settings, UI)
+│   ├─ plugins/          # 🔌 Vuetify, PWA, analytics
+│   ├─ services/         # 🌐 API integrations
+│   ├─ composables/      # ♻️ Reusable logic hooks
+│   ├─ config/           # ⚙️ Configurations
+│   ├─ utils/            # 🔧 Helpers (format, validate, cache)
+│   └─ types/            # 📑 Global TypeScript types & DTOs
+│
+├─ components/           # 🧱 Reusable UI
+│   ├─ common/           # 🔘 Buttons, cards, loaders
+│   ├─ layout/           # 🖼️ Shell, header, nav, footer
+│   ├─ weather/          # 🌦️ Search, cards, charts
+│   └─ feedback/         # 🔔 Alerts, snackbars, messages
+│
+├─ views/                # 📄 Pages (Dashboard, Favorites, Settings)
+├─ styles/               # 🎨 Global styles & themes
+├─ assets/               # 🖼️ Images & SVGs
+└─ main.ts               # 🚀 App entry point
+
+tests/                   # 🧪 Testing
+├─ unit/                 # 🧩 Unit tests (Vitest)
+└─ e2e/                  # 🌍 End-to-end tests (Playwright)
+
+.env.example             # 🔑 Env variables template
+package.json             # 📦 Scripts & dependencies
+vite.config.js           # ⚙️ Build & PWA config
+tsconfig.json            # 📑 TS configuration
+README.md                # 📖 Documentation
+```
+
+---
+
+## 🏁 Getting Started
+
+1️⃣ **Clone the repository**
+
+```bash
+git clone https://github.com/your-username/weather-dashboard.git
+cd weather-dashboard
+```
+
+2️⃣ **Install dependencies**
+
+```bash
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+3️⃣ **Set up environment variables**
+Copy `.env.example` → `.env` and add your API key:
 
-```sh
+```bash
+VITE_WEATHER_API_KEY=your_api_key_here
+```
+
+4️⃣ **Run the development server**
+
+```bash
 npm run dev
 ```
 
-### Type-Check, Compile and Minify for Production
+Open 👉 `http://localhost:5173` in your browser.
 
-```sh
+5️⃣ **Build for production**
+
+```bash
 npm run build
+npm run preview
 ```
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+---
 
-```sh
-npm run test:unit
-```
+## 🤝 Contributing
 
-### Run End-to-End Tests with [Playwright](https://playwright.dev)
+* 🍴 Fork the repository
+* 🌿 Create a feature branch
 
-```sh
-# Install browsers for the first run
-npx playwright install
+  ```bash
+  git checkout -b feature/my-feature
+  ```
+* 💾 Commit your changes
 
-# When testing on CI, must build the project first
-npm run build
+  ```bash
+  git commit -m "Add feature"
+  ```
+* 🚀 Push your branch
 
-# Runs the end-to-end tests
-npm run test:e2e
-# Runs the tests only on Chromium
-npm run test:e2e -- --project=chromium
-# Runs the tests of a specific file
-npm run test:e2e -- tests/example.spec.ts
-# Runs the tests in debug mode
-npm run test:e2e -- --debug
-```
+  ```bash
+  git push origin feature/my-feature
+  ```
+* 🔄 Open a Pull Request
 
-### Lint with [ESLint](https://eslint.org/)
+---
 
-```sh
-npm run lint
-```
+## 📄 License
+
+📝 Licensed under the **MIT License**.
+
+---
+
+## ✅ Release Checklist
+
+* 🔑 API key & environment variables configured
+* 📦 Build size within limits
+* 🔄 SPA redirects functional on host
+* ♿ Accessibility verified
+* 📲 PWA manifest & service worker validated
+* ⭐ Favorites & preferences persist across sessions
+* 🧪 Unit & E2E tests passing
+
+---
+
+## 📖 Summary
+
+The **Weather Dashboard** emphasizes:
+
+* ⚡ **Fast interactions**
+* 🎨 **User preference support** (favorites, themes)
+* 🛠️ **Long-term maintainability**
+* 📲 **Installable as a PWA** (without offline caching)
+
+---
