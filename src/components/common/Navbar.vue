@@ -366,6 +366,7 @@
   </v-app-bar>
 </template>
 
+
 <script>
 import { useWeatherStore } from '@/store/weather'
 import { useDisplay } from 'vuetify'
@@ -543,7 +544,9 @@ export default {
 }
 </script>
 
+
 <style scoped>
+/* Base (mobile-first) */
 .navbar {
   backdrop-filter: blur(20px) !important;
   -webkit-backdrop-filter: blur(20px) !important;
@@ -551,16 +554,10 @@ export default {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-.logo-section {
-  flex-shrink: 0;
-  min-width: 0;
-}
-
-.title-section {
-  line-height: 1.2;
-  min-width: 0;
-  overflow: hidden;
-}
+.logo-section { flex-shrink: 0; min-width: 0; }
+.title-section { line-height: 1.2; min-width: 0; overflow: hidden; }
+.weather-text { line-height: 1.2; min-width: 0; }
+.actions-section { flex-shrink: 0; }
 
 .current-weather-info {
   padding: 8px 16px;
@@ -571,20 +568,7 @@ export default {
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
-
-.current-weather-info:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-}
-
-.weather-text {
-  line-height: 1.2;
-  min-width: 0;
-}
-
-.actions-section {
-  flex-shrink: 0;
-}
+.current-weather-info:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12); }
 
 .action-btn {
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -592,23 +576,16 @@ export default {
   min-width: 44px !important;
   min-height: 44px !important;
 }
-
 .action-btn:hover {
   background: rgba(var(--v-theme-primary), 0.08) !important;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.2);
 }
 
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
+.animate-spin { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* Perfect badge positioning */
+/* Badge, cards, dialogs */
 .v-badge :deep(.v-badge__badge) {
   font-size: 10px !important;
   min-width: 16px !important;
@@ -616,125 +593,103 @@ export default {
   font-weight: 600 !important;
   border: 2px solid rgb(var(--v-theme-surface)) !important;
 }
-
-/* Notification card styling */
 .notification-card {
   border-radius: 16px !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
   border: 1px solid rgba(var(--v-border-color), 0.12) !important;
 }
-
-/* Dialog styling */
 .dialog-card {
   border-radius: 16px !important;
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15) !important;
 }
+.help-panels :deep(.v-expansion-panel) { border-radius: 8px !important; margin-bottom: 8px !important; }
 
-.help-panels :deep(.v-expansion-panel) {
-  border-radius: 8px !important;
-  margin-bottom: 8px !important;
+/* ---------------------------
+   Responsive Optimizations
+   --------------------------- */
+
+/* Ultra‑small phones (≤360px) */
+@media (max-width: 360px) {
+  .navbar :deep(.v-toolbar__content) { padding: 0 6px !important; gap: 4px !important; }
+  .logo-section .v-avatar { width: 24px !important; height: 24px !important; }
+  .title-section h1 { font-size: 0.92rem !important; max-width: 54vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .action-btn { min-width: 34px !important; min-height: 34px !important; }
+  .current-weather-info { display: none !important; }
 }
 
-/* ONLY FIXED POSITIONING ADDED FOR DEVICES BELOW 599px */
-@media (max-width: 599px) {
-  .navbar {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    z-index: 1005 !important;
-  }
-
-  /* Add padding to body to prevent content from going under navbar */
-  body {
-    padding-top: 56px !important;
-  }
-
-  .navbar :deep(.v-toolbar__content) {
-    padding: 0 8px !important;
-  }
-  
-  .logo-section .v-avatar {
-    width: 28px !important;
-    height: 28px !important;
-  }
-  
-  .title-section h1 {
-    font-size: 1.05rem !important;
-  }
-  
-  .action-btn {
-    min-width: 40px !important;
-    min-height: 40px !important;
-  }
+/* Small phones (361–599px) */
+@media (min-width: 361px) and (max-width: 599px) {
+  .navbar { position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; z-index: 1005 !important; }
+  body { padding-top: 56px !important; }
+  .navbar :deep(.v-toolbar__content) { padding: 0 8px !important; gap: 6px !important; }
+  .logo-section .v-avatar { width: 28px !important; height: 28px !important; }
+  .title-section h1 { font-size: 1.05rem !important; max-width: 56vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .action-btn { min-width: 40px !important; min-height: 40px !important; }
+  .current-weather-info { display: none !important; }
 }
 
-@media (min-width: 600px) and (max-width: 959px) {
-  .navbar :deep(.v-toolbar__content) {
-    padding: 0 12px !important;
-  }
-  
-  .current-weather-info {
-    padding: 6px 12px;
-  }
+/* Small tablets (600–767px) */
+@media (min-width: 600px) and (max-width: 767px) {
+  .navbar :deep(.v-toolbar__content) { padding: 0 12px !important; gap: 8px !important; }
+  .current-weather-info { padding: 6px 12px; margin-right: 6px; }
+  .title-section h1 { max-width: 44vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .action-btn { min-width: 40px !important; min-height: 40px !important; }
 }
 
-@media (min-width: 960px) {
-  .navbar :deep(.v-toolbar__content) {
-    padding: 0 16px !important;
-  }
+/* Tablets (768–959px) */
+@media (min-width: 768px) and (max-width: 959px) {
+  .navbar :deep(.v-toolbar__content) { padding: 0 14px !important; gap: 10px !important; }
+  .current-weather-info { margin-right: 8px !important; }
+  .title-section h1 { max-width: 40vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 }
 
-/* Dark theme optimizations */
+/* Desktops (960–1279px) */
+@media (min-width: 960px) and (max-width: 1279px) {
+  .navbar :deep(.v-toolbar__content) { padding: 0 16px !important; gap: 12px !important; }
+  .current-weather-info { padding: 8px 14px; }
+  .title-section h1 { max-width: 36vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+}
+
+/* Large desktops (1280–1599px) */
+@media (min-width: 1280px) and (max-width: 1599px) {
+  .navbar :deep(.v-toolbar__content) { padding: 0 20px !important; gap: 12px !important; }
+  .current-weather-info { padding: 8px 16px; }
+  .title-section h1 { max-width: 520px; }
+}
+
+/* Extra‑large screens (≥1600px) */
+@media (min-width: 1600px) {
+  .navbar :deep(.v-toolbar__content) { padding: 0 24px !important; gap: 14px !important; }
+  .current-weather-info { transform: translateZ(0); }
+  .title-section h1 { max-width: 640px; }
+}
+
+/* Dark theme */
 .v-theme--dark .navbar {
   background: rgba(var(--v-theme-surface), 0.95) !important;
   border-bottom-color: rgba(255, 255, 255, 0.08) !important;
 }
-
 .v-theme--dark .current-weather-info {
   background: rgba(var(--v-theme-surface), 0.9) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255), 0.1 !important;
 }
-
 .v-theme--dark .notification-card,
 .v-theme--dark .dialog-card {
   background: rgb(var(--v-theme-surface)) !important;
   border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
-/* Accessibility improvements */
+/* Accessibility */
 @media (prefers-reduced-motion: reduce) {
-  .action-btn,
-  .current-weather-info {
-    transition: none !important;
-  }
-  
-  .action-btn:hover,
-  .current-weather-info:hover {
-    transform: none !important;
-  }
-  
-  .animate-spin {
-    animation: none !important;
-  }
+  .action-btn, .current-weather-info { transition: none !important; }
+  .action-btn:hover, .current-weather-info:hover { transform: none !important; }
+  .animate-spin { animation: none !important; }
 }
+.action-btn:focus-visible { outline: 2px solid rgb(var(--v-theme-primary)) !important; outline-offset: 2px !important; }
 
-.action-btn:focus-visible {
-  outline: 2px solid rgb(var(--v-theme-primary)) !important;
-  outline-offset: 2px !important;
-}
-
-/* High contrast mode */
+/* High contrast */
 @media (prefers-contrast: high) {
-  .navbar {
-    backdrop-filter: none !important;
-    background: rgb(var(--v-theme-surface)) !important;
-  }
-  
-  .current-weather-info {
-    backdrop-filter: none !important;
-    background: rgb(var(--v-theme-surface)) !important;
-    border-width: 2px !important;
-  }
+  .navbar { backdrop-filter: none !important; background: rgb(var(--v-theme-surface)) !important; }
+  .current-weather-info { backdrop-filter: none !important; background: rgb(var(--v-theme-surface)) !important; border-width: 2px !important; }
 }
 </style>
