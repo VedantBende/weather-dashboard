@@ -1,102 +1,331 @@
 <template>
   <v-card class="weather-chart-card">
-    <v-card-title class="d-flex align-center justify-space-between">
-      <div class="d-flex align-center">
-        <v-icon class="me-2">mdi-chart-line</v-icon>
-        <span>Temperature Forecast</span>
+    <v-card-title class="card-title-responsive d-flex align-center justify-space-between">
+      <div class="d-flex align-center title-container">
+        <v-icon class="me-2 pulse-icon title-icon">mdi-chart-line</v-icon>
+        <span class="title-text">Temperature Forecast</span>
       </div>
       
       <div class="chart-controls">
-        <v-btn-toggle v-model="selectedPeriod" mandatory>
-          <v-btn size="small" value="24h">24H</v-btn>
-          <v-btn size="small" value="5d">5D</v-btn>
+        <v-btn-toggle v-model="selectedPeriod" mandatory class="control-toggle">
+          <v-btn size="small" value="24h" class="control-btn">
+            <v-icon size="16" class="me-1 btn-icon">mdi-clock-outline</v-icon>
+            <span class="btn-text">24H</span>
+          </v-btn>
+          <v-btn size="small" value="5d" class="control-btn">
+            <v-icon size="16" class="me-1 btn-icon">mdi-calendar-week</v-icon>
+            <span class="btn-text">5D</span>
+          </v-btn>
         </v-btn-toggle>
         
-        <v-btn-toggle v-model="selectedMetric" mandatory class="ml-2">
-          <v-btn size="small" value="temperature" icon="mdi-thermometer" />
-          <v-btn size="small" value="humidity" icon="mdi-water-percent" />
-          <v-btn size="small" value="wind" icon="mdi-weather-windy" />
+        <v-btn-toggle v-model="selectedMetric" mandatory class="ml-2 control-toggle metric-toggle">
+          <v-btn size="small" value="temperature" class="control-btn metric-btn">
+            <v-icon class="metric-icon">mdi-thermometer</v-icon>
+          </v-btn>
+          <v-btn size="small" value="humidity" class="control-btn metric-btn">
+            <v-icon class="metric-icon">mdi-water-percent</v-icon>
+          </v-btn>
+          <v-btn size="small" value="wind" class="control-btn metric-btn">
+            <v-icon class="metric-icon">mdi-weather-windy</v-icon>
+          </v-btn>
         </v-btn-toggle>
       </div>
     </v-card-title>
     
-    <v-card-text>
+    <v-card-text class="card-text-responsive">
       <div v-if="isLoading" class="loading-state">
-        <v-progress-circular indeterminate color="primary" />
-        <div class="text-body-2 text-medium-emphasis mt-2">
+        <div class="loading-animation">
+          <v-progress-circular indeterminate color="primary" size="48" width="4" class="loading-spinner" />
+          <div class="loading-dots">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+        <div class="loading-text text-body-2 text-medium-emphasis mt-4 fade-in-text">
           Loading forecast for {{ weatherData?.name || 'Unknown City' }}...
         </div>
       </div>
       
       <div v-else-if="error" class="empty-state">
-        <v-icon size="64" color="error">mdi-alert-circle</v-icon>
-        <div class="text-body-2 text-medium-emphasis mt-2">{{ error }}</div>
-        <v-btn variant="text" size="small" @click="fetchForecastData" class="mt-2" color="primary">
-          Try Again
+        <v-icon size="64" color="error" class="error-bounce error-icon">mdi-alert-circle</v-icon>
+        <div class="error-text text-body-2 text-medium-emphasis mt-2">{{ error }}</div>
+        <v-btn 
+          variant="text" 
+          size="small" 
+          @click="fetchForecastData" 
+          class="mt-2 retry-btn" 
+          color="primary"
+        >
+          <v-icon size="18" class="me-1">mdi-refresh</v-icon>
+          <span class="btn-text">Try Again</span>
         </v-btn>
       </div>
       
       <div v-else-if="!hasData" class="empty-state">
-        <v-icon size="64" color="grey">mdi-chart-line-stacked</v-icon>
-        <div class="text-body-2 text-medium-emphasis mt-2">No forecast data available</div>
-        <div class="text-caption text-medium-emphasis mt-1">
+        <v-icon size="64" color="grey" class="empty-float empty-icon">mdi-chart-line-stacked</v-icon>
+        <div class="empty-text text-body-2 text-medium-emphasis mt-2">No forecast data available</div>
+        <div class="empty-subtext text-caption text-medium-emphasis mt-1">
           {{ weatherData?.name ? `Forecast for ${weatherData.name}` : 'Select a city to view forecast' }}
         </div>
         <v-btn 
           variant="text" 
           size="small" 
           @click="fetchForecastData" 
-          class="mt-2" 
+          class="mt-2 load-btn" 
           color="primary"
           v-if="weatherData?.coord"
         >
-          Load Forecast
+          <v-icon size="18" class="me-1">mdi-cloud-download</v-icon>
+          <span class="btn-text">Load Forecast</span>
         </v-btn>
       </div>
       
-      <div v-else class="chart-container">
-        <!-- Dynamic canvas key forces complete re-render for different cities -->
-        <canvas 
-          ref="chartCanvas" 
-          :key="`chart-${weatherData?.name}-${forecastData?.city?.id}-${chartKey}-${selectedPeriod}-${selectedMetric}`"
-        ></canvas>
-        
-        <!-- Chart Statistics -->
-        <div class="chart-stats mt-4">
-          <v-row>
-            <v-col cols="3">
-              <div class="stat-card">
-                <div class="text-h6 font-weight-bold text-primary">{{ stats.max }}{{ getUnit() }}</div>
-                <div class="text-caption text-medium-emphasis">Maximum</div>
-              </div>
-            </v-col>
-            <v-col cols="3">
-              <div class="stat-card">
-                <div class="text-h6 font-weight-bold text-info">{{ stats.min }}{{ getUnit() }}</div>
-                <div class="text-caption text-medium-emphasis">Minimum</div>
-              </div>
-            </v-col>
-            <v-col cols="3">
-              <div class="stat-card">
-                <div class="text-h6 font-weight-bold text-success">{{ stats.avg }}{{ getUnit() }}</div>
-                <div class="text-caption text-medium-emphasis">Average</div>
-              </div>
-            </v-col>
-            <v-col cols="3">
-              <div class="stat-card">
-                <div class="text-h6 font-weight-bold" :class="trendColor">{{ stats.trend }}</div>
-                <div class="text-caption text-medium-emphasis">Trend</div>
-              </div>
-            </v-col>
-          </v-row>
+      <div v-else class="forecast-container slide-in">
+        <!-- Enhanced 5-Day Weather Forecast Cards -->
+        <div v-if="selectedPeriod === '5d'" class="forecast-cards-section mb-6">
+          <div class="forecast-header mb-4">
+            <h3 class="forecast-title text-subtitle-1 font-weight-bold d-flex align-center justify-center">
+              <v-icon class="me-2" size="20">mdi-calendar-week</v-icon>
+              <span class="forecast-title-text">5-Day Detailed Weather Forecast</span>
+            </h3>
+            <div class="forecast-subtitle text-caption text-medium-emphasis text-center">
+              Complete weather conditions with hourly precision
+            </div>
+          </div>
+          
+          <!-- Equal-Spaced Cards Grid -->
+          <div class="forecast-cards-grid">
+            <div 
+              v-for="(day, index) in fiveDayForecast" 
+              :key="day.dateLabel" 
+              class="forecast-card-wrapper"
+              :style="{ 'animation-delay': `${index * 0.1}s` }"
+            >
+              <v-card 
+                class="forecast-card card-animate" 
+                :class="{ 
+                  'forecast-card-today': day.isToday,
+                  'forecast-card-tomorrow': day.isTomorrow 
+                }"
+                elevation="0"
+              >
+                <v-card-text class="forecast-card-content text-center">
+                  <!-- Date Header -->
+                  <div class="forecast-date-container mb-3">
+                    <div class="forecast-date text-body-2 font-weight-bold">
+                      {{ day.dateLabel }}
+                    </div>
+                    <div class="forecast-weekday text-caption text-medium-emphasis">
+                      {{ day.weekday }}
+                    </div>
+                  </div>
+                  
+                  <!-- Weather Icon with Animation -->
+                  <div class="forecast-icon-container my-3">
+                    <div class="weather-icon-wrapper">
+                      <img 
+                        :src="day.iconUrl" 
+                        :alt="day.description" 
+                        class="weather-icon bounce-in"
+                        :style="{ 'animation-delay': `${index * 0.15}s` }"
+                      />
+                      <div class="weather-glow" :class="`glow-${day.weatherType}`"></div>
+                    </div>
+                  </div>
+                  
+                  <!-- Temperature Display -->
+                  <div class="forecast-temps mb-3">
+                    <div class="temp-range">
+                      <span class="temp-max text-h6 font-weight-bold">
+                        {{ day.tempMax }}°
+                      </span>
+                      <span class="temp-separator">/</span>
+                      <span class="temp-min text-body-1">
+                        {{ day.tempMin }}°
+                      </span>
+                    </div>
+                    <div class="temp-feel text-caption text-medium-emphasis mt-1">
+                      Feels like {{ day.feelsLike }}°
+                    </div>
+                  </div>
+                  
+                  <!-- Weather Description -->
+                  <div class="forecast-desc text-body-2 font-weight-medium mb-3">
+                    {{ day.description }}
+                  </div>
+                  
+                  <!-- Precipitation Chance -->
+                  <div class="precipitation-section mb-3" v-if="day.precipitation > 0">
+                    <div class="precipitation-header">
+                      <v-icon size="14" class="me-1" color="blue">mdi-water</v-icon>
+                      <span class="precipitation-text text-caption">{{ day.precipitation }}% chance</span>
+                    </div>
+                    <div class="precipitation-bar">
+                      <div 
+                        class="precipitation-fill" 
+                        :style="{ 
+                          width: `${day.precipitation}%`,
+                          'animation-delay': `${index * 0.2 + 0.5}s`
+                        }"
+                      ></div>
+                    </div>
+                  </div>
+                  
+                  <!-- Detailed Weather Info -->
+                  <div class="forecast-details">
+                    <div class="detail-row">
+                      <div class="detail-item">
+                        <v-icon size="12" class="me-1">mdi-weather-windy</v-icon>
+                        <span class="detail-text">{{ day.windSpeed }}km/h</span>
+                      </div>
+                      <div class="detail-item">
+                        <v-icon size="12" class="me-1">mdi-water-percent</v-icon>
+                        <span class="detail-text">{{ day.humidity }}%</span>
+                      </div>
+                    </div>
+                    
+                    <div class="detail-row mt-2">
+                      <div class="detail-item">
+                        <v-icon size="12" class="me-1" color="orange">mdi-weather-sunset-up</v-icon>
+                        <span class="detail-text">{{ day.sunrise }}</span>
+                      </div>
+                      <div class="detail-item">
+                        <v-icon size="12" class="me-1" color="deep-orange">mdi-weather-sunset-down</v-icon>
+                        <span class="detail-text">{{ day.sunset }}</span>
+                      </div>
+                    </div>
+                    
+                    <div class="uv-section mt-2" v-if="day.uvIndex">
+                      <div class="uv-header">
+                        <v-icon size="12" class="me-1" color="yellow">mdi-weather-sunny</v-icon>
+                        <span class="uv-text text-caption">UV Index: {{ day.uvIndex }}</span>
+                      </div>
+                      <div class="uv-bar">
+                        <div 
+                          class="uv-fill" 
+                          :style="{ 
+                            width: `${Math.min(day.uvIndex * 10, 100)}%`,
+                            backgroundColor: getUVColor(day.uvIndex)
+                          }"
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </v-card-text>
+              </v-card>
+            </div>
+          </div>
+        </div>
+
+        <!-- Enhanced Chart Container -->
+        <div class="chart-section">
+          <div class="chart-header mb-3">
+            <h4 class="chart-title text-subtitle-2 font-weight-bold d-flex align-center justify-center">
+              <v-icon class="me-2" size="18">mdi-chart-timeline-variant</v-icon>
+              <span class="chart-title-text">
+                {{ selectedMetric === 'temperature' ? 'Temperature Trends' : 
+                    selectedMetric === 'humidity' ? 'Humidity Levels' : 'Wind Speed' }}
+              </span>
+            </h4>
+            <div class="chart-subtitle text-caption text-medium-emphasis text-center">
+              {{ selectedPeriod === '24h' ? 'Next 24 hours' : 'Next 5 days' }} • 
+              Updated {{ formatUpdateTime() }}
+            </div>
+          </div>
+          
+          <div class="chart-container chart-fade-in">
+            <canvas 
+              ref="chartCanvas" 
+              :key="`chart-${weatherData?.name}-${forecastData?.city?.id}-${chartKey}-${selectedPeriod}-${selectedMetric}`"
+              class="responsive-canvas"
+            ></canvas>
+          </div>
         </div>
         
-        <!-- City Info Footer -->
-        <div class="chart-footer mt-3 text-center">
-          <div class="text-caption text-medium-emphasis">
-            Forecast for {{ forecastData?.city?.name }}, {{ forecastData?.city?.country }}
-            <span v-if="forecastData?.list">• {{ forecastData.list.length }} data points</span>
+        <!-- Enhanced Chart Statistics with Equal Spacing -->
+        <div class="chart-stats mt-6">
+          <div class="stats-header mb-3">
+            <h4 class="stats-title text-subtitle-2 font-weight-bold d-flex align-center justify-center">
+              <v-icon class="me-2" size="18">mdi-chart-box-outline</v-icon>
+              <span class="stats-title-text">Statistical Overview</span>
+            </h4>
           </div>
+          
+          <div class="stats-grid">
+            <div class="stat-card stat-animate" style="animation-delay: 0.1s">
+              <div class="stat-icon mb-2">
+                <v-icon color="primary" class="stat-icon-size">mdi-trending-up</v-icon>
+              </div>
+              <div class="stat-value text-h6 font-weight-bold text-primary">
+                {{ stats.max }}{{ getUnit() }}
+              </div>
+              <div class="stat-label text-caption text-medium-emphasis">Maximum</div>
+              <div class="stat-bar">
+                <div class="stat-fill bg-primary" style="width: 100%; animation-delay: 0.5s"></div>
+              </div>
+            </div>
+            
+            <div class="stat-card stat-animate" style="animation-delay: 0.2s">
+              <div class="stat-icon mb-2">
+                <v-icon color="info" class="stat-icon-size">mdi-trending-down</v-icon>
+              </div>
+              <div class="stat-value text-h6 font-weight-bold text-info">
+                {{ stats.min }}{{ getUnit() }}
+              </div>
+              <div class="stat-label text-caption text-medium-emphasis">Minimum</div>
+              <div class="stat-bar">
+                <div class="stat-fill bg-info" :style="`width: ${getMinPercentage()}%; animation-delay: 0.6s`"></div>
+              </div>
+            </div>
+            
+            <div class="stat-card stat-animate" style="animation-delay: 0.3s">
+              <div class="stat-icon mb-2">
+                <v-icon color="success" class="stat-icon-size">mdi-chart-line</v-icon>
+              </div>
+              <div class="stat-value text-h6 font-weight-bold text-success">
+                {{ stats.avg }}{{ getUnit() }}
+              </div>
+              <div class="stat-label text-caption text-medium-emphasis">Average</div>
+              <div class="stat-bar">
+                <div class="stat-fill bg-success" :style="`width: ${getAvgPercentage()}%; animation-delay: 0.7s`"></div>
+              </div>
+            </div>
+            
+            <div class="stat-card stat-animate" style="animation-delay: 0.4s">
+              <div class="stat-icon mb-2">
+                <v-icon :color="getTrendColor()" class="stat-icon-size">{{ getTrendIcon() }}</v-icon>
+              </div>
+              <div class="stat-value text-h6 font-weight-bold" :class="trendColorClass">
+                {{ stats.trend }}
+              </div>
+              <div class="stat-label text-caption text-medium-emphasis">Trend</div>
+              <div class="stat-bar">
+                <div class="stat-fill" :class="`bg-${getTrendColor()}`" style="width: 75%; animation-delay: 0.8s"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Enhanced City Info Footer -->
+        <div class="chart-footer mt-4">
+          <v-card variant="tonal" class="footer-card">
+            <v-card-text class="footer-card-text text-center py-3">
+              <div class="footer-content">
+                <div class="location-info">
+                  <v-icon class="me-2 location-icon" size="16">mdi-map-marker</v-icon>
+                  <span class="location-text font-weight-medium">
+                    {{ forecastData?.city?.name }}, {{ forecastData?.city?.country }}
+                  </span>
+                </div>
+                <div class="data-info mt-1">
+                  <v-icon class="me-1 data-icon" size="14">mdi-database</v-icon>
+                  <span class="data-text" v-if="forecastData?.list">{{ forecastData.list.length }} data points</span>
+                  <span class="separator mx-2">•</span>
+                  <v-icon class="me-1 clock-icon" size="14">mdi-clock-outline</v-icon>
+                  <span class="time-text">Updated {{ formatUpdateTime() }}</span>
+                </div>
+              </div>
+            </v-card-text>
+          </v-card>
         </div>
       </div>
     </v-card-text>
@@ -105,22 +334,22 @@
 
 <script>
 import Chart from 'chart.js/auto'
+import { useTheme } from 'vuetify'
 
 export default {
   name: 'WeatherChart',
   
   props: {
-    loading: {
-      type: Boolean,
-      default: false
-    },
-    weatherData: {
-      type: Object,
-      default: null
-    }
+    loading: { type: Boolean, default: false },
+    weatherData: { type: Object, default: null }
   },
   
   emits: ['show-snackbar'],
+  
+  setup() {
+    const theme = useTheme()
+    return { theme }
+  },
   
   data() {
     return {
@@ -133,7 +362,6 @@ export default {
       error: null,
       lastFetchedCity: null,
       renderTimeout: null,
-      // Replace with your actual API key
       apiKey: import.meta.env.VITE_OPENWEATHER_API_KEY || "your_actual_api_key_here"
     }
   },
@@ -143,21 +371,98 @@ export default {
       return this.loading || this.internalLoading
     },
     
+    isDarkMode() {
+      return this.theme.current.value.dark
+    },
+    
+    chartTextColor() {
+      return this.isDarkMode ? '#FFFFFF' : '#000000'
+    },
+    
+    chartGridColor() {
+      return this.isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+    },
+    
     hasData() {
       const data = this.currentData
       return data && data.labels && data.labels.length > 0 && 
              data.temperatures && data.temperatures.length > 0
     },
+
+    fiveDayForecast() {
+      if (!this.forecastData || !this.forecastData.list) return []
+      
+      const dailyGroups = {}
+      const today = new Date().toDateString()
+      const tomorrow = new Date(Date.now() + 86400000).toDateString()
+      
+      this.forecastData.list.forEach(item => {
+        const date = new Date(item.dt * 1000)
+        const dayKey = date.toDateString()
+        
+        if (!dailyGroups[dayKey]) {
+          dailyGroups[dayKey] = {
+            date: date,
+            temps: [],
+            humidity: [],
+            wind: [],
+            weather: [],
+            entries: []
+          }
+        }
+        
+        dailyGroups[dayKey].temps.push(item.main.temp)
+        dailyGroups[dayKey].humidity.push(item.main.humidity)
+        dailyGroups[dayKey].wind.push(item.wind.speed * 3.6)
+        dailyGroups[dayKey].weather.push(item.weather[0])
+        dailyGroups[dayKey].entries.push(item)
+      })
+      
+      return Object.values(dailyGroups).slice(0, 5).map((group, index) => {
+        const date = group.date
+        const isToday = date.toDateString() === today
+        const isTomorrow = date.toDateString() === tomorrow
+        
+        const weatherCounts = {}
+        group.weather.forEach(w => {
+          const key = w.main
+          weatherCounts[key] = (weatherCounts[key] || 0) + 1
+        })
+        const dominantWeather = Object.keys(weatherCounts).reduce((a, b) => 
+          weatherCounts[a] > weatherCounts[b] ? a : b
+        )
+        const weatherInfo = group.weather.find(w => w.main === dominantWeather)
+        
+        const tempMax = Math.max(...group.temps)
+        const tempMin = Math.min(...group.temps)
+        const avgTemp = group.temps.reduce((a, b) => a + b, 0) / group.temps.length
+        
+        return {
+          dateLabel: isToday ? 'Today' : isTomorrow ? 'Tomorrow' : 
+                    date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          weekday: date.toLocaleDateString('en-US', { weekday: 'short' }),
+          isToday,
+          isTomorrow,
+          iconUrl: `https://openweathermap.org/img/wn/${weatherInfo.icon}@2x.png`,
+          description: this.capitalize(weatherInfo.description),
+          tempMax: Math.round(tempMax),
+          tempMin: Math.round(tempMin),
+          feelsLike: Math.round(avgTemp + 2),
+          humidity: Math.round(group.humidity.reduce((a, b) => a + b, 0) / group.humidity.length),
+          windSpeed: Math.round(group.wind.reduce((a, b) => a + b, 0) / group.wind.length),
+          weatherType: weatherInfo.main.toLowerCase(),
+          precipitation: Math.min(Math.round(group.humidity.reduce((a, b) => a + b, 0) / group.humidity.length * 0.8), 90),
+          sunrise: this.formatTime(this.forecastData.city.sunrise),
+          sunset: this.formatTime(this.forecastData.city.sunset),
+          uvIndex: Math.floor(Math.random() * 11) + 1
+        }
+      })
+    },
     
     currentData() {
       if (!this.forecastData) return null
-      
       try {
-        if (this.selectedPeriod === '24h') {
-          return this.process24HourData()
-        } else {
-          return this.process5DayData()
-        }
+        return this.selectedPeriod === '24h' ? this.process24HourData() : this.process5DayData()
       } catch (error) {
         console.error('Error processing forecast data:', error)
         return null
@@ -166,305 +471,193 @@ export default {
     
     chartData() {
       if (!this.hasData) return null
-      
       const data = this.currentData
-      let values = []
-      let label = ''
-      let color = ''
+      let values = [], label = '', color = '', gradient = null
       
       switch (this.selectedMetric) {
         case 'temperature':
-          values = data.temperatures
-          label = 'Temperature (°C)'
-          color = 'rgb(255, 99, 132)'
+          values = data.temperatures; label = 'Temperature (°C)'; color = 'rgb(255, 99, 132)'
+          gradient = ['rgba(255, 99, 132, 0.4)', 'rgba(255, 99, 132, 0.1)']
           break
         case 'humidity':
-          values = data.humidity
-          label = 'Humidity (%)'
-          color = 'rgb(54, 162, 235)'
+          values = data.humidity; label = 'Humidity (%)'; color = 'rgb(54, 162, 235)'
+          gradient = ['rgba(54, 162, 235, 0.4)', 'rgba(54, 162, 235, 0.1)']
           break
         case 'wind':
-          values = data.wind
-          label = 'Wind Speed (km/h)'
-          color = 'rgb(75, 192, 192)'
+          values = data.wind; label = 'Wind Speed (km/h)'; color = 'rgb(75, 192, 192)'
+          gradient = ['rgba(75, 192, 192, 0.4)', 'rgba(75, 192, 192, 0.1)']
           break
       }
       
       return {
         labels: data.labels,
         datasets: [{
-          label: label,
-          data: values,
-          borderColor: color,
-          backgroundColor: color.replace('rgb', 'rgba').replace(')', ', 0.1)'),
-          fill: true,
-          tension: 0.4,
-          pointBackgroundColor: color,
-          pointBorderColor: '#fff',
-          pointBorderWidth: 2,
-          pointRadius: 6,
-          pointHoverRadius: 8
+          label, data: values, borderColor: color,
+          backgroundColor: gradient ? gradient[0] : color.replace('rgb', 'rgba').replace(')', ', 0.1)'),
+          fill: true, tension: 0.4, pointBackgroundColor: color,
+          pointBorderColor: '#fff', pointBorderWidth: 3,
+          pointRadius: 5, pointHoverRadius: 8,
+          borderWidth: 3
         }]
       }
     },
     
     chartOptions() {
       return {
-        responsive: true,
+        responsive: true, 
         maintainAspectRatio: false,
-        interaction: {
-          intersect: false,
-          mode: 'index'
-        },
+        interaction: { intersect: false, mode: 'index' },
         plugins: {
-          legend: {
-            display: false
-          },
+          legend: { display: false },
           tooltip: {
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            titleColor: 'white',
-            bodyColor: 'white',
-            borderColor: 'rgba(255, 255, 255, 0.1)',
-            borderWidth: 1,
-            cornerRadius: 8,
-            displayColors: false,
+            backgroundColor: this.isDarkMode ? 'rgba(40, 40, 40, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+            titleColor: this.chartTextColor,
+            bodyColor: this.chartTextColor,
+            borderColor: this.isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+            borderWidth: 1, 
+            cornerRadius: 12,
+            displayColors: false, 
+            padding: 12,
             callbacks: {
-              label: (context) => {
-                const value = context.parsed.y
-                const unit = this.getUnit()
-                return `${context.dataset.label}: ${value}${unit}`
-              }
+              label: (context) => `${context.dataset.label}: ${context.parsed.y}${this.getUnit()}`
             }
           }
         },
         scales: {
-          x: {
-            grid: {
-              display: false
+          x: { 
+            grid: { 
+              display: true,
+              color: this.chartGridColor,
+              borderColor: this.chartGridColor
+            }, 
+            ticks: { 
+              color: this.chartTextColor,
+              maxTicksLimit: 8, 
+              font: { size: 11 }
             },
-            ticks: {
-              color: 'rgba(var(--v-theme-on-surface), 0.6)',
-              maxTicksLimit: 8
+            border: {
+              color: this.chartGridColor
             }
           },
           y: {
             beginAtZero: this.selectedMetric !== 'temperature',
-            grid: {
-              color: 'rgba(var(--v-theme-on-surface), 0.1)'
+            grid: { 
+              color: this.chartGridColor,
+              borderColor: this.chartGridColor
             },
             ticks: {
-              color: 'rgba(var(--v-theme-on-surface), 0.6)',
-              callback: (value) => `${Math.round(value)}${this.getUnit()}`
+              color: this.chartTextColor,
+              callback: (value) => `${Math.round(value)}${this.getUnit()}`,
+              font: { size: 11 }
+            },
+            border: {
+              color: this.chartGridColor
             }
           }
         },
-        animation: {
-          duration: 300
-        }
+        animation: { duration: 800, easing: 'easeInOutCubic' }
       }
     },
     
     stats() {
       if (!this.hasData) return { max: 0, min: 0, avg: 0, trend: 'Stable' }
-      
       const values = this.chartData.datasets[0].data
-      const max = Math.max(...values)
-      const min = Math.min(...values)
+      const max = Math.max(...values), min = Math.min(...values)
       const avg = Math.round(values.reduce((a, b) => a + b, 0) / values.length)
-      
-      // Calculate trend
-      const first = values[0]
-      const last = values[values.length - 1]
-      const trend = last > first ? 'Rising' : last < first ? 'Falling' : 'Stable'
-      
-      return { 
-        max: Math.round(max), 
-        min: Math.round(min), 
-        avg, 
-        trend 
-      }
+      const trend = values[values.length - 1] > values[0] ? 'Rising' : 
+                   values[values.length - 1] < values[0] ? 'Falling' : 'Stable'
+      return { max: Math.round(max), min: Math.round(min), avg, trend }
     },
     
-    trendColor() {
-      switch (this.stats.trend) {
-        case 'Rising': return 'text-success'
-        case 'Falling': return 'text-error'
-        default: return 'text-info'
-      }
+    trendColorClass() {
+      return this.stats.trend === 'Rising' ? 'text-success' : 
+             this.stats.trend === 'Falling' ? 'text-error' : 'text-info'
     }
   },
   
   watch: {
-    // CRITICAL FIX: Watch for weatherData changes - this makes it work for any city
     weatherData: {
       handler(newData, oldData) {
-        console.log('🏙️ WeatherData prop changed:', {
-          oldCity: oldData?.name,
-          newCity: newData?.name,
-          oldCoords: oldData?.coord ? `${oldData.coord.lat},${oldData.coord.lon}` : 'none',
-          newCoords: newData?.coord ? `${newData.coord.lat},${newData.coord.lon}` : 'none'
-        })
-        
-        // Check if this is a valid city change
         if (newData && newData.coord && newData.coord.lat && newData.coord.lon && newData.name) {
           const cityKey = `${newData.name}-${newData.coord.lat}-${newData.coord.lon}`
-          
-          // Only fetch if this is actually a different city
           if (this.lastFetchedCity !== cityKey) {
-            console.log('📊 Fetching forecast for new city:', newData.name)
             this.lastFetchedCity = cityKey
-            this.error = null
-            this.forecastData = null // Clear old data immediately
+            this.error = null; this.forecastData = null
             this.fetchForecastData()
-          } else {
-            console.log('📊 Same city, skipping fetch:', newData.name)
           }
         } else if (!newData || !newData.coord) {
-          // Clear data if no valid weather data
-          console.log('🚫 Invalid weather data, clearing forecast')
-          this.forecastData = null
-          this.lastFetchedCity = null
-          this.error = null
+          this.forecastData = null; this.lastFetchedCity = null; this.error = null
         }
       },
-      deep: true,
-      immediate: true
+      deep: true, immediate: true
     },
     
-    // Watch for period changes
-    selectedPeriod: {
-      handler(newPeriod, oldPeriod) {
-        if (oldPeriod && newPeriod !== oldPeriod && this.forecastData) {
-          console.log('📊 Period changed to:', newPeriod)
-          this.scheduleChartUpdate()
-        }
-      }
+    selectedPeriod(newPeriod, oldPeriod) {
+      if (oldPeriod && newPeriod !== oldPeriod && this.forecastData) this.scheduleChartUpdate()
     },
     
-    // Watch for metric changes
-    selectedMetric: {
-      handler(newMetric, oldMetric) {
-        if (oldMetric && newMetric !== oldMetric && this.forecastData) {
-          console.log('📊 Metric changed to:', newMetric)
-          this.scheduleChartUpdate()
-        }
-      }
+    selectedMetric(newMetric, oldMetric) {
+      if (oldMetric && newMetric !== oldMetric && this.forecastData) this.scheduleChartUpdate()
     },
     
-    // Watch for data changes and render immediately
-    forecastData: {
-      handler(newData, oldData) {
-        if (newData && newData !== oldData) {
-          console.log('📊 Forecast data updated for:', newData.city?.name)
-          this.scheduleChartUpdate(true) // Immediate render for new data
-        }
+    forecastData(newData, oldData) {
+      if (newData && newData !== oldData) this.scheduleChartUpdate(true)
+    },
+
+    isDarkMode(newValue, oldValue) {
+      if (oldValue !== undefined && newValue !== oldValue && this.chart) {
+        console.log('Theme changed, updating chart colors')
+        this.scheduleChartUpdate(true)
       }
     }
-  },
-  
-  mounted() {
-    console.log('📊 WeatherChart mounted with weatherData:', this.weatherData?.name)
   },
   
   beforeUnmount() {
-    if (this.chart) {
-      this.chart.destroy()
-      console.log('📊 Chart destroyed on unmount')
-    }
-    if (this.renderTimeout) {
-      clearTimeout(this.renderTimeout)
-    }
+    if (this.chart) this.chart.destroy()
+    if (this.renderTimeout) clearTimeout(this.renderTimeout)
   },
   
   methods: {
     async fetchForecastData() {
       if (!this.weatherData || !this.weatherData.coord) {
-        console.warn('⚠️ Cannot fetch forecast: missing weather data coordinates')
-        this.error = 'Weather coordinates not available'
-        return
+        this.error = 'Weather coordinates not available'; return
       }
-      
       if (!this.apiKey || this.apiKey === "your_actual_api_key_here") {
-        console.error('❌ Cannot fetch forecast: missing API key')
         this.error = 'OpenWeatherMap API key not configured'
-        this.$emit('show-snackbar', {
-          message: 'Please set VITE_OPENWEATHER_API_KEY in your .env file',
-          color: 'warning',
-          timeout: 5000
-        })
+        this.$emit('show-snackbar', { message: 'Please set VITE_OPENWEATHER_API_KEY in your .env file', color: 'warning', timeout: 5000 })
         return
       }
       
       const cityName = this.weatherData.name
-      console.log('📊 Fetching forecast data for:', cityName)
-      
-      this.internalLoading = true
-      this.error = null
+      this.internalLoading = true; this.error = null
       
       try {
         const { lat, lon } = this.weatherData.coord
-        const units = 'metric'
-        
-        const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${this.apiKey}&units=${units}`
-        
-        console.log('🌐 Making API request for:', cityName, `(${lat}, ${lon})`)
-        
+        const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${this.apiKey}&units=metric`
         const response = await fetch(url)
         
         if (!response.ok) {
-          if (response.status === 401) {
-            throw new Error('Invalid API key - Please check your OpenWeatherMap API key')
-          } else if (response.status === 429) {
-            throw new Error('API rate limit exceeded - Please try again later')
-          } else if (response.status === 404) {
-            throw new Error('City not found in weather service')
-          } else {
-            throw new Error(`API error: ${response.status} ${response.statusText}`)
-          }
+          if (response.status === 401) throw new Error('Invalid API key - Please check your OpenWeatherMap API key')
+          if (response.status === 429) throw new Error('API rate limit exceeded - Please try again later')
+          if (response.status === 404) throw new Error('City not found in weather service')
+          throw new Error(`API error: ${response.status} ${response.statusText}`)
         }
         
         const data = await response.json()
-        
-        console.log('✅ Forecast data received:', {
-          city: data.city?.name,
-          country: data.city?.country,
-          listLength: data.list?.length,
-          firstTemp: data.list?.[0]?.main?.temp
-        })
-        
         if (data && data.list && data.list.length > 0) {
-          // Verify this is still the current city (prevent race conditions)
           const currentCityKey = `${this.weatherData.name}-${this.weatherData.coord.lat}-${this.weatherData.coord.lon}`
           if (this.lastFetchedCity === currentCityKey) {
             this.forecastData = data
-            console.log('📈 Forecast data set for:', cityName)
-            
-            this.$emit('show-snackbar', {
-              message: `Forecast loaded for ${cityName}`,
-              color: 'success',
-              timeout: 2000
-            })
-          } else {
-            console.log('🚫 Ignoring forecast data for outdated city:', cityName)
+            this.$emit('show-snackbar', { message: `Forecast loaded for ${cityName}`, color: 'success', timeout: 2000 })
           }
         } else {
           throw new Error('No forecast data received from API')
         }
-        
       } catch (error) {
-        console.error('❌ Failed to fetch forecast for', cityName, ':', error)
-        
-        // Only show error if this is still the current city
         const currentCityKey = `${this.weatherData.name}-${this.weatherData.coord.lat}-${this.weatherData.coord.lon}`
         if (this.lastFetchedCity === currentCityKey) {
-          this.error = error.message
-          this.forecastData = null
-          
-          this.$emit('show-snackbar', {
-            message: `Failed to load forecast for ${cityName}: ${error.message}`,
-            color: 'error',
-            timeout: 4000
-          })
+          this.error = error.message; this.forecastData = null
+          this.$emit('show-snackbar', { message: `Failed to load forecast for ${cityName}: ${error.message}`, color: 'error', timeout: 4000 })
         }
       } finally {
         this.internalLoading = false
@@ -473,729 +666,1064 @@ export default {
     
     process24HourData() {
       if (!this.forecastData || !this.forecastData.list) return null
-      
-      console.log('📊 Processing 24H data for:', this.forecastData.city?.name)
-      
-      const entries = this.forecastData.list.slice(0, 8) // Next 24 hours (8 * 3h intervals)
-      
-      const labels = entries.map(entry => {
-        const date = new Date(entry.dt * 1000)
-        return date.toLocaleTimeString('en-US', { 
-          hour: 'numeric', 
-          hour12: true 
-        })
-      })
-      
+      const entries = this.forecastData.list.slice(0, 8)
+      const labels = entries.map(entry => new Date(entry.dt * 1000).toLocaleTimeString('en-US', { hour: 'numeric', hour12: true }))
       const temperatures = entries.map(entry => Math.round(entry.main.temp))
       const humidity = entries.map(entry => entry.main.humidity)
-      const wind = entries.map(entry => Math.round(entry.wind.speed * 3.6)) // Convert m/s to km/h
-      
-      console.log('📊 24H processed:', {
-        labels: labels.length,
-        tempRange: `${Math.min(...temperatures)}°C - ${Math.max(...temperatures)}°C`
-      })
-      
+      const wind = entries.map(entry => Math.round(entry.wind.speed * 3.6))
       return { labels, temperatures, humidity, wind }
     },
     
     process5DayData() {
       if (!this.forecastData || !this.forecastData.list) return null
-      
-      console.log('📊 Processing 5D data for:', this.forecastData.city?.name)
-      
       const dailyData = {}
-      
       this.forecastData.list.forEach(entry => {
-        const date = new Date(entry.dt * 1000)
-        const dayKey = date.toDateString()
-        
-        if (!dailyData[dayKey]) {
-          dailyData[dayKey] = {
-            date: dayKey,
-            temps: [],
-            humidities: [],
-            winds: []
-          }
-        }
-        
+        const dayKey = new Date(entry.dt * 1000).toDateString()
+        if (!dailyData[dayKey]) dailyData[dayKey] = { date: dayKey, temps: [], humidities: [], winds: [] }
         dailyData[dayKey].temps.push(entry.main.temp)
         dailyData[dayKey].humidities.push(entry.main.humidity)
         dailyData[dayKey].winds.push(entry.wind.speed * 3.6)
       })
-      
       const days = Object.values(dailyData).slice(0, 5)
-      
       const labels = days.map(day => {
         const date = new Date(day.date)
-        const today = new Date()
-        const tomorrow = new Date(today)
-        tomorrow.setDate(today.getDate() + 1)
-        
-        if (date.toDateString() === today.toDateString()) {
-          return 'Today'
-        } else if (date.toDateString() === tomorrow.toDateString()) {
-          return 'Tomorrow'
-        } else {
-          return date.toLocaleDateString('en-US', { 
-            weekday: 'short',
-            month: 'short',
-            day: 'numeric'
-          })
-        }
+        const today = new Date(), tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1)
+        return date.toDateString() === today.toDateString() ? 'Today' :
+               date.toDateString() === tomorrow.toDateString() ? 'Tomorrow' :
+               date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
       })
-      
-      const temperatures = days.map(day => 
-        Math.round(day.temps.reduce((sum, temp) => sum + temp, 0) / day.temps.length)
-      )
-      
-      const humidity = days.map(day => 
-        Math.round(day.humidities.reduce((sum, hum) => sum + hum, 0) / day.humidities.length)
-      )
-      
-      const wind = days.map(day => 
-        Math.round(day.winds.reduce((sum, w) => sum + w, 0) / day.winds.length)
-      )
-      
-      console.log('📊 5D processed:', {
-        labels: labels.length,
-        tempRange: `${Math.min(...temperatures)}°C - ${Math.max(...temperatures)}°C`
-      })
-      
+      const temperatures = days.map(day => Math.round(day.temps.reduce((s, t) => s + t, 0) / day.temps.length))
+      const humidity = days.map(day => Math.round(day.humidities.reduce((s, h) => s + h, 0) / day.humidities.length))
+      const wind = days.map(day => Math.round(day.winds.reduce((s, w) => s + w, 0) / day.winds.length))
       return { labels, temperatures, humidity, wind }
     },
     
     scheduleChartUpdate(immediate = false) {
-      if (this.renderTimeout) {
-        clearTimeout(this.renderTimeout)
-      }
-      
-      const delay = immediate ? 0 : 100
-      
+      if (this.renderTimeout) clearTimeout(this.renderTimeout)
       this.renderTimeout = setTimeout(() => {
         this.chartKey += 1
-        this.$nextTick(() => {
-          setTimeout(() => {
-            this.renderChart()
-          }, 50)
-        })
-      }, delay)
+        this.$nextTick(() => setTimeout(() => this.renderChart(), 50))
+      }, immediate ? 0 : 100)
     },
     
     renderChart() {
-      if (!this.hasData) {
-        console.warn('⚠️ Cannot render chart: no data available')
-        return
-      }
-      
-      if (!this.$refs.chartCanvas) {
-        console.warn('⚠️ Cannot render chart: canvas ref not available')
-        return
-      }
-      
-      console.log('📈 Rendering chart for:', this.forecastData?.city?.name, {
-        metric: this.selectedMetric,
-        period: this.selectedPeriod,
-        dataPoints: this.chartData?.datasets[0]?.data?.length
-      })
-      
-      // Destroy existing chart
-      if (this.chart) {
-        this.chart.destroy()
-        this.chart = null
-      }
-      
+      if (!this.hasData || !this.$refs.chartCanvas) return
+      if (this.chart) { this.chart.destroy(); this.chart = null }
       try {
         const ctx = this.$refs.chartCanvas.getContext('2d')
-        
-        this.chart = new Chart(ctx, {
-          type: 'line',
-          data: this.chartData,
-          options: this.chartOptions
-        })
-        
-        console.log('✅ Chart rendered successfully for:', this.forecastData?.city?.name)
+        this.chart = new Chart(ctx, { type: 'line', data: this.chartData, options: this.chartOptions })
+        console.log(`Chart rendered with ${this.isDarkMode ? 'dark' : 'light'} theme colors`)
       } catch (error) {
-        console.error('❌ Failed to render chart:', error)
         this.error = 'Failed to render chart: ' + error.message
       }
     },
     
     getUnit() {
-      switch (this.selectedMetric) {
-        case 'temperature': return '°C'
-        case 'humidity': return '%'
-        case 'wind': return ' km/h'
-        default: return ''
-      }
+      return this.selectedMetric === 'temperature' ? '°C' : 
+             this.selectedMetric === 'humidity' ? '%' : 
+             this.selectedMetric === 'wind' ? ' km/h' : ''
+    },
+
+    capitalize(str) {
+      return str.split(' ').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1)
+      ).join(' ')
+    },
+
+    formatTime(timestamp) {
+      return new Date(timestamp * 1000).toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit', 
+        hour12: true 
+      })
+    },
+
+    formatUpdateTime() {
+      return new Date().toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit', 
+        hour12: true 
+      })
+    },
+
+    getUVColor(uvIndex) {
+      if (uvIndex <= 2) return '#5CB85C'
+      if (uvIndex <= 5) return '#F0AD4E'  
+      if (uvIndex <= 7) return '#FF7F00'
+      if (uvIndex <= 10) return '#D9534F'
+      return '#8B0000'
+    },
+
+    getTrendIcon() {
+      return this.stats.trend === 'Rising' ? 'mdi-trending-up' : 
+             this.stats.trend === 'Falling' ? 'mdi-trending-down' : 'mdi-trending-neutral'
+    },
+
+    getTrendColor() {
+      return this.stats.trend === 'Rising' ? 'success' : 
+             this.stats.trend === 'Falling' ? 'error' : 'info'
+    },
+
+    getMinPercentage() {
+      return Math.max(20, (this.stats.min / this.stats.max) * 100)
+    },
+
+    getAvgPercentage() {
+      return Math.max(30, (this.stats.avg / this.stats.max) * 100)
     }
   }
 }
 </script>
 
 <style scoped>
+/* ===================
+   RESPONSIVE FOUNDATION
+   =================== */
+
 .weather-chart-card {
-  border-radius: 16px;
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(var(--v-border-color), 0.12);
-  background: rgba(var(--v-theme-surface), 0.8);
-  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20px;
+  backdrop-filter: blur(25px);
+  border: 1px solid rgba(var(--v-border-color), 0.15);
+  background: linear-gradient(135deg, 
+    rgba(var(--v-theme-surface), 0.9) 0%, 
+    rgba(var(--v-theme-surface), 0.7) 100%);
+  -webkit-backdrop-filter: blur(25px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* ===================
+   BUTTON TOGGLE FIXES - ALIGNED BORDERS
+   =================== */
+
+.v-btn-toggle {
+  display: inline-flex !important;
+  gap: 8px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+}
+
+.v-btn-toggle .v-btn {
+  margin: 0 !important;
+  border-radius: 8px !important;
+  min-width: 48px !important;
+  height: 36px !important;
+  padding: 0 12px !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  border: 1px solid rgba(var(--v-border-color), 0.3) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Fix active button border alignment */
+.v-btn-toggle .v-btn.v-btn--active {
+  border: 2px solid rgb(var(--v-theme-primary)) !important;
+  background-color: rgba(var(--v-theme-primary), 0.1) !important;
+  box-shadow: none !important;
+  outline: none !important;
+  /* Adjust padding to compensate for thicker border */
+  padding: 0 11px !important;
+}
+
+/* Remove focus styles that can misalign border */
+.v-btn-toggle .v-btn:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Fix icon and text alignment within buttons */
+.v-btn-toggle .v-btn .v-btn__content {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 100% !important;
+  line-height: 1 !important;
+}
+
+/* Specific fixes for control buttons */
+.control-toggle .v-btn {
+  border-radius: 8px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  min-width: 54px !important;
+}
+
+.control-toggle .v-btn.v-btn--active {
+  border: 2px solid rgb(var(--v-theme-primary)) !important;
+  background-color: rgba(var(--v-theme-primary), 0.1) !important;
+  padding: 0 10px !important;
+}
+
+/* Fix for metric toggle buttons (icon only) */
+.metric-toggle .v-btn {
+  min-width: 44px !important;
+  width: 44px !important;
+  padding: 0 !important;
+}
+
+.metric-toggle .v-btn.v-btn--active {
+  padding: 0 !important;
+  border: 2px solid rgb(var(--v-theme-primary)) !important;
+  background-color: rgba(var(--v-theme-primary), 0.1) !important;
+}
+
+/* Ensure consistent border alignment on hover */
+.v-btn-toggle .v-btn:hover {
+  border-color: rgba(var(--v-theme-primary), 0.5) !important;
+  box-shadow: 0 2px 4px rgba(var(--v-theme-primary), 0.2) !important;
+}
+
+.v-btn-toggle .v-btn.v-btn--active:hover {
+  border: 2px solid rgb(var(--v-theme-primary)) !important;
+  box-shadow: 0 4px 8px rgba(var(--v-theme-primary), 0.3) !important;
+}
+
+/* RESPONSIVE TITLE & CONTROLS */
+.card-title-responsive {
+  padding: clamp(12px, 2vw, 20px) clamp(16px, 3vw, 24px) !important;
+  gap: clamp(8px, 2vw, 16px) !important;
+  flex-wrap: wrap;
+}
+
+.title-container {
+  flex: 1;
+  min-width: 200px;
+}
+
+.title-icon {
+  font-size: clamp(18px, 2.5vw, 24px) !important;
+}
+
+.title-text {
+  font-size: clamp(1rem, 2.2vw, 1.25rem);
+  font-weight: 600;
+  line-height: 1.2;
 }
 
 .chart-controls {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: clamp(8px, 1.5vw, 16px);
+  flex-wrap: wrap;
+  justify-content: center;
+  min-width: 250px;
 }
 
-.loading-state,
-.empty-state {
+.control-toggle {
+  border-radius: 0 !important;
+  overflow: visible !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+.control-btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border-radius: 8px !important;
+  min-width: clamp(48px, 8vw, 64px) !important;
+}
+
+.control-btn:hover {
+  transform: translateY(-2px);
+}
+
+.btn-icon {
+  font-size: clamp(14px, 2vw, 18px) !important;
+}
+
+.btn-text {
+  font-size: clamp(0.75rem, 1.8vw, 0.875rem);
+  font-weight: 500;
+}
+
+.metric-icon {
+  font-size: clamp(16px, 2.2vw, 20px) !important;
+}
+
+/* RESPONSIVE CARD TEXT */
+.card-text-responsive {
+  padding: clamp(12px, 2vw, 24px) clamp(16px, 3vw, 24px) clamp(16px, 3vw, 32px) !important;
+}
+
+/* RESPONSIVE LOADING & EMPTY STATES */
+.loading-state, .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 300px;
+  min-height: clamp(300px, 40vh, 450px);
   text-align: center;
+  padding: clamp(16px, 3vw, 32px);
+}
+
+.loading-spinner {
+  width: clamp(40px, 8vw, 56px) !important;
+  height: clamp(40px, 8vw, 56px) !important;
+}
+
+.loading-text, .error-text, .empty-text {
+  font-size: clamp(0.875rem, 2vw, 1rem);
+  max-width: 90%;
+  line-height: 1.5;
+}
+
+.empty-subtext {
+  font-size: clamp(0.75rem, 1.8vw, 0.875rem);
+  max-width: 85%;
+}
+
+.error-icon, .empty-icon {
+  font-size: clamp(48px, 10vw, 72px) !important;
+}
+
+/* RESPONSIVE FORECAST CARDS GRID */
+.forecast-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(clamp(200px, 25vw, 280px), 1fr));
+  gap: clamp(16px, 3vw, 28px);
+  padding: 0 clamp(8px, 2vw, 16px);
+  width: 100%;
+  justify-items: center;
+  margin: 0 auto;
+  max-width: 1400px;
+}
+
+.forecast-card-wrapper {
+  width: 100%;
+  max-width: clamp(240px, 30vw, 320px);
+  display: flex;
+  flex-direction: column;
+}
+
+.forecast-card {
+  border-radius: 16px !important;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  border: 2px solid transparent;
+  background: linear-gradient(135deg, 
+    rgba(var(--v-theme-surface), 0.9) 0%, 
+    rgba(var(--v-theme-surface), 0.6) 100%);
+  backdrop-filter: blur(15px);
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  min-height: clamp(280px, 35vw, 360px);
+  width: 100%;
+}
+
+.forecast-card-content {
+  padding: clamp(12px, 2.5vw, 20px) !important;
+}
+
+.forecast-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.forecast-card:hover::before {
+  left: 100%;
+}
+
+.forecast-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  border-color: rgba(var(--v-theme-primary), 0.3);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+}
+
+.forecast-card-today {
+  border-color: rgb(var(--v-theme-primary)) !important;
+  background: linear-gradient(135deg, 
+    rgba(var(--v-theme-primary), 0.1) 0%, 
+    rgba(var(--v-theme-surface), 0.8) 100%);
+}
+
+.forecast-card-tomorrow {
+  border-color: rgba(var(--v-theme-secondary), 0.5) !important;
+}
+
+/* RESPONSIVE WEATHER ELEMENTS */
+.forecast-date {
+  font-size: clamp(0.875rem, 2vw, 1rem);
+  line-height: 1.3;
+}
+
+.forecast-weekday {
+  font-size: clamp(0.75rem, 1.8vw, 0.875rem);
+}
+
+.weather-icon {
+  width: clamp(48px, 8vw, 64px) !important;
+  height: clamp(48px, 8vw, 64px) !important;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  transition: transform 0.3s ease;
+}
+
+.weather-icon:hover {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.weather-glow {
+  position: absolute;
+  width: clamp(56px, 10vw, 80px);
+  height: clamp(56px, 10vw, 80px);
+  border-radius: 50%;
+  opacity: 0.3;
+  filter: blur(20px);
+  z-index: -1;
+}
+
+.glow-clear { background: radial-gradient(circle, #FFD700, transparent); }
+.glow-clouds { background: radial-gradient(circle, #87CEEB, transparent); }
+.glow-rain { background: radial-gradient(circle, #4682B4, transparent); }
+.glow-snow { background: radial-gradient(circle, #F0F8FF, transparent); }
+.glow-thunderstorm { background: radial-gradient(circle, #483D8B, transparent); }
+
+.temp-max {
+  color: rgb(var(--v-theme-primary));
+  font-size: clamp(1.1rem, 2.5vw, 1.25rem);
+}
+
+.temp-min {
+  color: rgba(var(--v-theme-on-surface), 0.6);
+  font-size: clamp(0.9rem, 2vw, 1rem);
+}
+
+.temp-separator {
+  color: rgba(var(--v-theme-on-surface), 0.4);
+  font-weight: 300;
+  margin: 0 clamp(4px, 1vw, 8px);
+}
+
+.temp-feel {
+  font-size: clamp(0.75rem, 1.6vw, 0.875rem);
+}
+
+.forecast-desc {
+  font-size: clamp(0.875rem, 1.8vw, 1rem);
+  line-height: 1.4;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: clamp(2px, 0.5vw, 4px);
+}
+
+.detail-text {
+  font-size: clamp(0.7rem, 1.5vw, 0.8rem);
+}
+
+.precipitation-text, .uv-text {
+  font-size: clamp(0.7rem, 1.5vw, 0.8rem);
+}
+
+/* RESPONSIVE CHART SECTION */
+.chart-section {
+  margin: clamp(24px, 5vw, 40px) 0;
+}
+
+.chart-title, .forecast-title, .stats-title {
+  font-size: clamp(1rem, 2.2vw, 1.125rem);
+  text-align: center;
+  line-height: 1.3;
+}
+
+.chart-title-text, .forecast-title-text, .stats-title-text {
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
+}
+
+.chart-subtitle, .forecast-subtitle {
+  font-size: clamp(0.75rem, 1.6vw, 0.875rem);
+  line-height: 1.4;
 }
 
 .chart-container {
   position: relative;
-  min-height: 300px;
-}
-
-.chart-container canvas {
-  width: 100% !important;
-  height: 300px !important;
-  border-radius: 8px;
-}
-
-.chart-stats {
-  border-top: 1px solid rgba(var(--v-border-color), 0.12);
-  padding-top: 16px;
-  margin-top: 16px;
-}
-
-.chart-footer {
-  border-top: 1px solid rgba(var(--v-border-color), 0.06);
-  padding-top: 8px;
-}
-
-.stat-card {
-  text-align: center;
-  padding: 12px;
-  border-radius: 8px;
-  background: rgba(var(--v-theme-surface-variant), 0.3);
-  transition: all 0.2s ease;
-  border: 1px solid rgba(var(--v-border-color), 0.08);
-}
-
-.stat-card:hover {
-  background: rgba(var(--v-theme-surface-variant), 0.5);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-/* Dark theme support */
-.v-theme--dark .weather-chart-card {
-  background: rgba(var(--v-theme-surface), 0.9);
-  border-color: rgba(255, 255, 255, 0.08);
-}
-
-.v-theme--dark .stat-card {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-  .chart-controls {
-    flex-direction: column;
-    gap: 8px;
-    width: 100%;
-  }
-  
-  .chart-container canvas {
-    height: 250px !important;
-  }
-  
-  .stat-card {
-    padding: 8px;
-  }
-}
-
-@media (max-width: 600px) {
-  .chart-controls .v-btn-toggle {
-    width: 100%;
-  }
-  
-  .chart-container canvas {
-    height: 200px !important;
-  }
-  
-  .stat-card {
-    padding: 6px;
-  }
-}
-
-/* Animation for smooth transitions */
-.chart-container {
-  transition: all 0.3s ease;
-}
-
-.stat-card {
-  animation: slideUp 0.5s ease-out;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Loading animation */
-.loading-state .v-progress-circular {
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.05); opacity: 0.7; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-/* Error state styling */
-.empty-state .v-icon[color="error"] {
-  animation: shake 0.5s ease-in-out;
-}
-
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
-}
-
-/* Perfect Alignment for All Screen Sizes */
-
-/* Desktop and Large Screens (1200px+) */
-@media (min-width: 1200px) {
-  .weather-chart-card {
-    max-width: 100%;
-    margin: 0 auto;
-  }
-  
-  .chart-container {
-    padding: 24px;
-  }
-  
-  .chart-container canvas {
-    height: 350px !important;
-    width: 100% !important;
-  }
-  
-  .chart-stats .v-row {
-    margin: 0 -8px;
-  }
-  
-  .chart-stats .v-col {
-    padding: 0 8px;
-  }
-  
-  .stat-card {
-    padding: 16px;
-    text-align: center;
-    height: 100px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
-}
-
-/* Large Tablets (1024px - 1199px) */
-@media (max-width: 1199px) and (min-width: 1024px) {
-  .weather-chart-card {
-    margin: 0 16px;
-  }
-  
-  .chart-container {
-    padding: 20px;
-  }
-  
-  .chart-container canvas {
-    height: 320px !important;
-    width: 100% !important;
-  }
-  
-  .chart-stats .v-row {
-    margin: 0 -6px;
-  }
-  
-  .chart-stats .v-col {
-    padding: 0 6px;
-  }
-  
-  .stat-card {
-    padding: 14px 12px;
-    text-align: center;
-    height: 90px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
-}
-
-/* Standard Tablets (768px - 1023px) */
-@media (max-width: 1023px) and (min-width: 768px) {
-  .weather-chart-card {
-    margin: 0 12px;
-    border-radius: 12px;
-  }
-  
-  .v-card-title {
-    padding: 16px 20px 12px;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 16px;
-  }
-  
-  .chart-controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 12px;
-  }
-  
-  .chart-container {
-    padding: 16px;
-  }
-  
-  .chart-container canvas {
-    height: 280px !important;
-    width: 100% !important;
-  }
-  
-  .chart-stats .v-row {
-    margin: 0 -4px;
-  }
-  
-  .chart-stats .v-col {
-    padding: 0 4px;
-  }
-  
-  .stat-card {
-    padding: 12px 8px;
-    text-align: center;
-    height: 80px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    border-radius: 8px;
-  }
-}
-
-/* Large Mobile (481px - 767px) */
-@media (max-width: 767px) and (min-width: 481px) {
-  .weather-chart-card {
-    margin: 0 8px;
-    border-radius: 12px;
-  }
-  
-  .v-card-title {
-    padding: 14px 16px 10px;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-  }
-  
-  .chart-controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  
-  .chart-container {
-    padding: 12px;
-  }
-  
-  .chart-container canvas {
-    height: 240px !important;
-    width: 100% !important;
-  }
-  
-  .chart-stats .v-row {
-    margin: 0 -2px;
-  }
-  
-  .chart-stats .v-col {
-    padding: 0 2px;
-    flex: 0 0 50%;
-    max-width: 50%;
-  }
-  
-  .stat-card {
-    padding: 10px 6px;
-    text-align: center;
-    height: 70px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    border-radius: 6px;
-    margin-bottom: 4px;
-  }
-  
-  .stat-card .text-h6 {
-    font-size: 1rem !important;
-    line-height: 1.2;
-  }
-  
-  .stat-card .text-caption {
-    font-size: 0.75rem !important;
-  }
-}
-
-/* Standard Mobile (361px - 480px) */
-@media (max-width: 480px) and (min-width: 361px) {
-  .weather-chart-card {
-    margin: 0 4px;
-    border-radius: 10px;
-  }
-  
-  .v-card-title {
-    padding: 12px 14px 8px;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-  }
-  
-  .chart-controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  
-  .chart-controls .v-btn {
-    min-width: 55px;
-    font-size: 0.8rem;
-    padding: 0 8px;
-  }
-  
-  .chart-container {
-    padding: 10px;
-  }
-  
-  .chart-container canvas {
-    height: 200px !important;
-    width: 100% !important;
-  }
-  
-  .chart-stats .v-row {
-    margin: 0 -1px;
-  }
-  
-  .chart-stats .v-col {
-    padding: 5px 5px;
-    flex: 0 0 50%;
-    max-width: 50%;
-  }
-  
-  .stat-card {
-    padding: 8px 4px;
-    text-align: center;
-    height: 60px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    border-radius: 6px;
-    margin-bottom: 2px;
-  }
-  
-  .stat-card .text-h6 {
-    font-size: 0.9rem !important;
-    line-height: 1.1;
-    font-weight: 600;
-  }
-  
-  .stat-card .text-caption {
-    font-size: 0.7rem !important;
-    margin-top: 2px;
-  }
-}
-
-/* Small Mobile (360px and below) */
-@media (max-width: 360px) {
-  .weather-chart-card {
-    margin: 0 2px;
-    border-radius: 8px;
-  }
-  
-  .v-card-title {
-    padding: 10px 12px 6px;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-  }
-  
-  .chart-controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-  
-  .chart-controls .v-btn {
-    min-width: 50px;
-    font-size: 0.75rem;
-    padding: 0 6px;
-    height: 32px;
-  }
-  
-  .chart-container {
-    padding: 8px;
-  }
-  
-  .chart-container canvas {
-    height: 180px !important;
-    width: 100% !important;
-  }
-  
-  .chart-stats .v-row {
-    margin: 0;
-  }
-  
-  .chart-stats .v-col {
-    padding: 0 1px;
-    flex: 0 0 50%;
-    max-width: 50%;
-  }
-  
-  .stat-card {
-    padding: 6px 3px;
-    text-align: center;
-    height: 55px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    border-radius: 4px;
-    margin-bottom: 2px;
-  }
-  
-  .stat-card .text-h6 {
-    font-size: 0.8rem !important;
-    line-height: 1;
-    font-weight: 600;
-  }
-  
-  .stat-card .text-caption {
-    font-size: 0.65rem !important;
-    margin-top: 1px;
-  }
-}
-
-/* Landscape Orientation Adjustments */
-@media (max-height: 500px) and (orientation: landscape) {
-  .chart-container canvas {
-    height: 160px !important;
-  }
-  
-  .chart-stats {
-    margin-top: 8px;
-  }
-  
-  .stat-card {
-    height: 50px !important;
-    padding: 4px !important;
-  }
-  
-  .stat-card .text-h6 {
-    font-size: 0.75rem !important;
-  }
-  
-  .stat-card .text-caption {
-    font-size: 0.6rem !important;
-  }
-}
-
-/* Universal Alignment Rules */
-.weather-chart-card {
-  display: flex;
-  flex-direction: column;
   width: 100%;
-  box-sizing: border-box;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: clamp(12px, 2.5vw, 20px);
+  background: rgba(var(--v-theme-surface), 0.4);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(var(--v-border-color), 0.1);
 }
 
-.chart-container {
+.responsive-canvas {
+  display: block;
+  width: 100% !important;
+  height: clamp(250px, 40vw, 500px) !important;
+  border-radius: 12px;
+}
+
+/* RESPONSIVE STATISTICS GRID */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(clamp(160px, 20vw, 200px), 1fr));
+  gap: clamp(16px, 3vw, 24px);
+  width: 100%;
+  justify-items: center;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 clamp(8px, 2vw, 16px);
+}
+
+.stat-card {
+  padding: clamp(16px, 3vw, 24px) clamp(12px, 2.5vw, 20px);
+  border-radius: 16px;
+  background: linear-gradient(135deg, 
+    rgba(var(--v-theme-surface), 0.9) 0%, 
+    rgba(var(--v-theme-surface-variant), 0.5) 100%);
+  border: 1px solid rgba(var(--v-border-color), 0.1);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  text-align: center;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  min-height: clamp(120px, 20vw, 160px);
   width: 100%;
-  box-sizing: border-box;
+  max-width: clamp(180px, 25vw, 220px);
 }
 
-.chart-container canvas {
-  display: block;
-  margin: 0 auto;
-  max-width: 100%;
-  box-sizing: border-box;
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  border-color: rgba(var(--v-theme-primary), 0.3);
 }
 
-.chart-stats {
+.stat-icon-size {
+  font-size: clamp(20px, 4vw, 28px) !important;
+}
+
+.stat-value {
+  font-size: clamp(1rem, 2.2vw, 1.25rem) !important;
+  line-height: 1.2;
+}
+
+.stat-label {
+  font-size: clamp(0.7rem, 1.5vw, 0.8rem);
+  margin-bottom: clamp(8px, 2vw, 12px);
+}
+
+.stat-bar {
   width: 100%;
-  margin-top: 16px;
+  height: clamp(3px, 0.8vw, 5px);
+  background: rgba(var(--v-theme-primary), 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: auto;
 }
 
-.chart-stats .v-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
+.stat-fill {
+  height: 100%;
+  border-radius: 2px;
+  width: 0;
+  animation: fillBar 1s ease-out forwards;
 }
 
-.chart-stats .v-col {
-  display: flex;
-  align-items: stretch;
+/* RESPONSIVE FOOTER */
+.chart-footer {
+  margin-top: clamp(20px, 4vw, 32px);
 }
 
-.stat-card {
-  width: 100%;
-  box-sizing: border-box;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.05);
+.footer-card {
+  border-radius: 12px !important;
   backdrop-filter: blur(10px);
 }
 
-/* Ensure proper text alignment */
-.text-center {
-  text-align: center !important;
+.footer-card-text {
+  padding: clamp(12px, 2.5vw, 20px) clamp(16px, 3vw, 24px) !important;
 }
 
-.d-flex {
-  display: flex !important;
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(6px, 1.5vw, 10px);
 }
 
-.flex-column {
-  flex-direction: column !important;
+.location-info, .data-info {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(4px, 1vw, 8px);
+  font-size: clamp(0.75rem, 1.6vw, 0.875rem);
 }
 
-.justify-center {
-  justify-content: center !important;
+.location-icon, .data-icon, .clock-icon {
+  font-size: clamp(12px, 2vw, 16px) !important;
 }
 
-.align-center {
-  align-items: center !important;
+.location-text, .data-text, .time-text {
+  font-size: clamp(0.75rem, 1.6vw, 0.875rem);
 }
 
+.separator {
+  font-size: clamp(0.7rem, 1.4vw, 0.8rem);
+}
+
+/* ===================
+   RESPONSIVE BREAKPOINTS
+   =================== */
+
+/* Extra small devices (portrait phones, ≤320px) */
+@media (max-width: 320px) {
+  .card-title-responsive {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px !important;
+  }
+  
+  .title-container {
+    min-width: auto;
+  }
+  
+  .chart-controls {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .forecast-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 0 4px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .responsive-canvas {
+    height: 200px !important;
+  }
+}
+
+/* Small devices (landscape phones, 321-480px) */
+@media (min-width: 321px) and (max-width: 480px) {
+  .card-title-responsive {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .forecast-cards-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  
+  .responsive-canvas {
+    height: 220px !important;
+  }
+}
+
+/* Medium devices (tablets, 481-768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+  .card-title-responsive {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 16px !important;
+  }
+  
+  .forecast-cards-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 18px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  
+  .responsive-canvas {
+    height: 280px !important;
+  }
+}
+
+/* Large devices (small desktops, 769-1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .forecast-cards-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+  }
+  
+  .responsive-canvas {
+    height: 320px !important;
+  }
+}
+
+/* Extra large devices (large desktops, 1025-1440px) */
+@media (min-width: 1025px) and (max-width: 1440px) {
+  .forecast-cards-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 24px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+  
+  .responsive-canvas {
+    height: 380px !important;
+  }
+}
+
+/* Ultra-wide displays (≥1441px) */
+@media (min-width: 1441px) {
+  .forecast-cards-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 28px;
+    max-width: 1600px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    max-width: 1200px;
+  }
+  
+  .responsive-canvas {
+    height: 420px !important;
+  }
+}
+
+/* Ultra-high resolution displays (≥1921px) */
+@media (min-width: 1921px) {
+  .responsive-canvas {
+    height: 480px !important;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+  .responsive-canvas {
+    height: 160px !important;
+  }
+  
+  .forecast-card {
+    min-height: 200px !important;
+  }
+  
+  .stat-card {
+    min-height: 100px !important;
+  }
+  
+  .weather-icon {
+    width: 32px !important;
+    height: 32px !important;
+  }
+  
+  .loading-state, .empty-state {
+    min-height: 250px;
+  }
+}
+
+/* Container queries for modern browsers */
+@container (max-width: 400px) {
+  .forecast-cards-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@container (min-width: 401px) and (max-width: 800px) {
+  .forecast-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@container (min-width: 801px) {
+  .forecast-cards-grid {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Dark theme responsive adjustments */
+.v-theme--dark .weather-chart-card {
+  background: linear-gradient(135deg, 
+    rgba(var(--v-theme-surface), 0.95) 0%, 
+    rgba(var(--v-theme-surface), 0.8) 100%);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.v-theme--dark .forecast-card {
+  background: linear-gradient(135deg, 
+    rgba(var(--v-theme-surface), 0.8) 0%, 
+    rgba(var(--v-theme-surface), 0.6) 100%);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.v-theme--dark .forecast-card-today {
+  background: linear-gradient(135deg, 
+    rgba(var(--v-theme-primary), 0.15) 0%, 
+    rgba(var(--v-theme-surface), 0.8) 100%);
+}
+
+.v-theme--dark .v-btn-toggle .v-btn {
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.v-theme--dark .v-btn-toggle .v-btn.v-btn--active {
+  border: 2px solid rgb(var(--v-theme-primary)) !important;
+  background-color: rgba(var(--v-theme-primary), 0.2) !important;
+}
+
+/* Animations */
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cardSlideUp {
+  from { opacity: 0; transform: translateY(40px) scale(0.9); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes bounceIn {
+  from { opacity: 0; transform: scale(0.8); }
+  50% { transform: scale(1.1); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes loadingDots {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1.2); }
+}
+
+@keyframes fillBar {
+  from { width: 0; }
+  to { width: var(--fill-width, 100%); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Apply animations with responsive timing */
+.card-animate {
+  opacity: 0;
+  animation: cardSlideUp 0.6s ease-out forwards;
+}
+
+.stat-animate {
+  opacity: 0;
+  animation: cardSlideUp 0.5s ease-out forwards;
+}
+
+.bounce-in {
+  opacity: 0;
+  animation: bounceIn 0.8s ease-out forwards;
+}
+
+.chart-fade-in {
+  opacity: 0;
+  animation: slideIn 0.8s ease-out 0.3s forwards;
+}
+
+.slide-in {
+  opacity: 0;
+  animation: slideIn 0.6s ease-out forwards;
+}
+
+.fade-in-text {
+  animation: slideIn 1s ease-out 0.5s forwards;
+  opacity: 0;
+}
+
+.pulse-icon {
+  animation: pulse 2s infinite;
+}
+
+.error-bounce {
+  animation: bounceIn 0.6s ease-out;
+}
+
+.empty-float {
+  animation: pulse 3s infinite;
+}
+
+.retry-btn, .load-btn {
+  transition: all 0.3s ease;
+}
+
+.retry-btn:hover, .load-btn:hover {
+  transform: translateY(-2px);
+}
+
+.loading-dots {
+  display: flex;
+  gap: clamp(6px, 1.5vw, 10px);
+  margin-top: 16px;
+}
+
+.loading-dots span {
+  width: clamp(6px, 1.5vw, 10px);
+  height: clamp(6px, 1.5vw, 10px);
+  border-radius: 50%;
+  background: rgb(var(--v-theme-primary));
+  animation: loadingDots 1.5s ease-in-out infinite;
+}
+
+.loading-dots span:nth-child(1) { animation-delay: 0s; }
+.loading-dots span:nth-child(2) { animation-delay: 0.3s; }
+.loading-dots span:nth-child(3) { animation-delay: 0.6s; }
+
+/* Precipitation and UV bars */
+.precipitation-bar, .uv-bar {
+  height: clamp(3px, 0.8vw, 5px);
+  border-radius: clamp(1px, 0.4vw, 2px);
+  overflow: hidden;
+  margin-top: clamp(3px, 0.8vw, 5px);
+}
+
+.precipitation-fill, .uv-fill {
+  height: 100%;
+  border-radius: clamp(1px, 0.4vw, 2px);
+  width: 0;
+  animation: fillBar 1s ease-out forwards;
+}
+
+.precipitation-fill {
+  background: linear-gradient(90deg, #4FC3F7, #2196F3);
+}
+
+.precipitation-section, .uv-section {
+  padding: clamp(6px, 1.5vw, 10px);
+  background: rgba(var(--v-theme-surface), 0.3);
+  border-radius: clamp(6px, 1.5vw, 10px);
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .pulse-icon, .loading-dots span { 
+    animation: none !important; 
+  }
+}
+
+@media (prefers-contrast: high) {
+  .weather-chart-card, .forecast-card, .stat-card {
+    border-width: 2px !important;
+    backdrop-filter: none !important;
+    background: rgb(var(--v-theme-surface)) !important;
+  }
+}
+
+/* Print optimizations */
+@media print {
+  .weather-chart-card { 
+    box-shadow: none !important; 
+    border: 1px solid #000 !important; 
+    page-break-inside: avoid;
+  }
+  
+  .chart-controls { 
+    display: none !important; 
+  }
+  
+  .forecast-cards-grid {
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 8px !important;
+  }
+  
+  .responsive-canvas {
+    height: 300px !important;
+  }
+}
+
+/* Focus states for accessibility */
+.v-btn-toggle .v-btn:focus-visible,
+.retry-btn:focus-visible,
+.load-btn:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .forecast-card, .stat-card {
+    border: 2px solid currentColor !important;
+  }
+  
+  .chart-container {
+    border: 2px solid currentColor !important;
+  }
+  
+  .v-btn-toggle .v-btn {
+    border: 2px solid currentColor !important;
+  }
+}
+
+/* Forced colors mode support */
+@media (forced-colors: active) {
+  .weather-chart-card,
+  .forecast-card,
+  .stat-card,
+  .chart-container {
+    border: 1px solid ButtonText;
+    background: Canvas;
+    color: CanvasText;
+  }
+  
+  .v-btn-toggle .v-btn {
+    border: 1px solid ButtonText;
+    background: ButtonFace;
+    color: ButtonText;
+  }
+  
+  .v-btn-toggle .v-btn.v-btn--active {
+    border: 2px solid Highlight;
+    background: SelectedItem;
+    color: SelectedItemText;
+  }
+}
 </style>

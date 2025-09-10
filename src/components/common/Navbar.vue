@@ -15,7 +15,7 @@
           <v-app-bar-nav-icon
             v-if="mobile"
             @click="$emit('toggle-sidebar')"
-            class="me-2"
+            class="me-2 nav-icon-btn"
             size="small"
           />
           
@@ -82,15 +82,14 @@
               <v-btn
                 icon
                 variant="text"
-                :size="mobile ? 'small' : 'default'"
+                class="action-btn fixed-btn-size"
+                :class="mobile ? 'me-1' : 'me-2'"
                 @click="refreshWeather"
                 :loading="loading"
-                class="action-btn"
-                :class="mobile ? 'me-1' : 'me-2'"
               >
                 <v-icon 
                   :class="{ 'animate-spin': loading }" 
-                  :size="mobile ? 18 : 24"
+                  class="btn-icon"
                 >
                   mdi-refresh
                 </v-icon>
@@ -110,10 +109,9 @@
                   <v-btn
                     icon
                     variant="text"
-                    :size="mobile ? 'small' : 'default'"
-                    v-bind="props"
-                    class="action-btn"
+                    class="action-btn fixed-btn-size"
                     :class="mobile ? 'me-1' : 'me-2'"
+                    v-bind="props"
                   >
                     <v-badge 
                       :content="unreadNotificationCount" 
@@ -122,7 +120,7 @@
                       overlap
                       :dot="mobile"
                     >
-                      <v-icon :size="mobile ? 18 : 24">
+                      <v-icon class="btn-icon">
                         {{ notifications ? 'mdi-bell' : 'mdi-bell-off' }}
                       </v-icon>
                     </v-badge>
@@ -217,9 +215,8 @@
 
               <!-- Dark mode toggle -->
               <DarkModeToggle 
-                class="action-btn"
+                class="action-btn fixed-btn-size"
                 :class="mobile ? 'me-1' : 'me-2'"
-                :size="mobile ? 'small' : 'default'"
               />
 
               <!-- Settings menu -->
@@ -228,11 +225,10 @@
                   <v-btn
                     icon
                     variant="text"
-                    :size="mobile ? 'small' : 'default'"
+                    class="action-btn fixed-btn-size"
                     v-bind="props"
-                    class="action-btn"
                   >
-                    <v-icon :size="mobile ? 18 : 24">mdi-dots-vertical</v-icon>
+                    <v-icon class="btn-icon">mdi-dots-vertical</v-icon>
                     <v-tooltip v-if="!mobile" activator="parent" location="bottom">
                       More options
                     </v-tooltip>
@@ -365,7 +361,6 @@
     </v-dialog>
   </v-app-bar>
 </template>
-
 
 <script>
 import { useWeatherStore } from '@/store/weather'
@@ -544,7 +539,6 @@ export default {
 }
 </script>
 
-
 <style scoped>
 /* Base (mobile-first) */
 .navbar {
@@ -570,16 +564,102 @@ export default {
 }
 .current-weather-info:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12); }
 
+/* =================== 
+   FIXED BUTTON STYLES - BORDER ALIGNMENT FIX
+   =================== */
+
+/* Navigation icon button with fixed alignment */
+.nav-icon-btn {
+  border-radius: 8px !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  /* Fixed dimensions */
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  min-height: 40px !important;
+  /* Center content */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Action button fixed sizing and alignment */
+.fixed-btn-size {
+  border-radius: 8px !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  /* Fixed dimensions for perfect alignment */
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  min-height: 40px !important;
+  /* Perfect centering */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Button border overlay for consistent alignment */
+.fixed-btn-size::before,
+.nav-icon-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
+.fixed-btn-size:hover::before,
+.nav-icon-btn:hover::before {
+  opacity: 1;
+}
+
+/* Icon sizing within buttons */
+.btn-icon {
+  width: 20px !important;
+  height: 20px !important;
+  font-size: 20px !important;
+  margin: 0 !important;
+}
+
+/* Legacy action-btn class for compatibility */
 .action-btn {
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 12px !important;
-  min-width: 44px !important;
-  min-height: 44px !important;
+  border-radius: 8px !important;
 }
-.action-btn:hover {
+
+.action-btn:hover,
+.fixed-btn-size:hover,
+.nav-icon-btn:hover {
   background: rgba(var(--v-theme-primary), 0.08) !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(var(--v-theme-primary), 0.15);
+}
+
+.action-btn:active,
+.fixed-btn-size:active,
+.nav-icon-btn:active {
+  transform: translateY(0);
+  transition-duration: 0.1s;
 }
 
 .animate-spin { animation: spin 1s linear infinite; }
@@ -605,7 +685,7 @@ export default {
 .help-panels :deep(.v-expansion-panel) { border-radius: 8px !important; margin-bottom: 8px !important; }
 
 /* ---------------------------
-   Responsive Optimizations
+   Responsive Optimizations with Fixed Button Sizes
    --------------------------- */
 
 /* Ultra‑small phones (≤360px) */
@@ -613,7 +693,21 @@ export default {
   .navbar :deep(.v-toolbar__content) { padding: 0 6px !important; gap: 4px !important; }
   .logo-section .v-avatar { width: 24px !important; height: 24px !important; }
   .title-section h1 { font-size: 0.92rem !important; max-width: 54vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .action-btn { min-width: 34px !important; min-height: 34px !important; }
+  
+  .fixed-btn-size,
+  .nav-icon-btn {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+  }
+  
+  .btn-icon {
+    width: 16px !important;
+    height: 16px !important;
+    font-size: 16px !important;
+  }
+  
   .current-weather-info { display: none !important; }
 }
 
@@ -624,7 +718,21 @@ export default {
   .navbar :deep(.v-toolbar__content) { padding: 0 8px !important; gap: 6px !important; }
   .logo-section .v-avatar { width: 28px !important; height: 28px !important; }
   .title-section h1 { font-size: 1.05rem !important; max-width: 56vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .action-btn { min-width: 40px !important; min-height: 40px !important; }
+  
+  .fixed-btn-size,
+  .nav-icon-btn {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+  }
+  
+  .btn-icon {
+    width: 18px !important;
+    height: 18px !important;
+    font-size: 18px !important;
+  }
+  
   .current-weather-info { display: none !important; }
 }
 
@@ -633,7 +741,20 @@ export default {
   .navbar :deep(.v-toolbar__content) { padding: 0 12px !important; gap: 8px !important; }
   .current-weather-info { padding: 6px 12px; margin-right: 6px; }
   .title-section h1 { max-width: 44vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .action-btn { min-width: 40px !important; min-height: 40px !important; }
+  
+  .fixed-btn-size,
+  .nav-icon-btn {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    min-height: 38px !important;
+  }
+  
+  .btn-icon {
+    width: 19px !important;
+    height: 19px !important;
+    font-size: 19px !important;
+  }
 }
 
 /* Tablets (768–959px) */
@@ -641,6 +762,20 @@ export default {
   .navbar :deep(.v-toolbar__content) { padding: 0 14px !important; gap: 10px !important; }
   .current-weather-info { margin-right: 8px !important; }
   .title-section h1 { max-width: 40vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  
+  .fixed-btn-size,
+  .nav-icon-btn {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    min-height: 40px !important;
+  }
+  
+  .btn-icon {
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 20px !important;
+  }
 }
 
 /* Desktops (960–1279px) */
@@ -648,6 +783,20 @@ export default {
   .navbar :deep(.v-toolbar__content) { padding: 0 16px !important; gap: 12px !important; }
   .current-weather-info { padding: 8px 14px; }
   .title-section h1 { max-width: 36vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  
+  .fixed-btn-size,
+  .nav-icon-btn {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    min-height: 42px !important;
+  }
+  
+  .btn-icon {
+    width: 21px !important;
+    height: 21px !important;
+    font-size: 21px !important;
+  }
 }
 
 /* Large desktops (1280–1599px) */
@@ -655,6 +804,20 @@ export default {
   .navbar :deep(.v-toolbar__content) { padding: 0 20px !important; gap: 12px !important; }
   .current-weather-info { padding: 8px 16px; }
   .title-section h1 { max-width: 520px; }
+  
+  .fixed-btn-size,
+  .nav-icon-btn {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+  
+  .btn-icon {
+    width: 22px !important;
+    height: 22px !important;
+    font-size: 22px !important;
+  }
 }
 
 /* Extra‑large screens (≥1600px) */
@@ -662,6 +825,20 @@ export default {
   .navbar :deep(.v-toolbar__content) { padding: 0 24px !important; gap: 14px !important; }
   .current-weather-info { transform: translateZ(0); }
   .title-section h1 { max-width: 640px; }
+  
+  .fixed-btn-size,
+  .nav-icon-btn {
+    width: 46px !important;
+    height: 46px !important;
+    min-width: 46px !important;
+    min-height: 46px !important;
+  }
+  
+  .btn-icon {
+    width: 23px !important;
+    height: 23px !important;
+    font-size: 23px !important;
+  }
 }
 
 /* Dark theme */
@@ -681,15 +858,19 @@ export default {
 
 /* Accessibility */
 @media (prefers-reduced-motion: reduce) {
-  .action-btn, .current-weather-info { transition: none !important; }
-  .action-btn:hover, .current-weather-info:hover { transform: none !important; }
+  .action-btn, .current-weather-info, .fixed-btn-size, .nav-icon-btn { transition: none !important; }
+  .action-btn:hover, .current-weather-info:hover, .fixed-btn-size:hover, .nav-icon-btn:hover { transform: none !important; }
   .animate-spin { animation: none !important; }
 }
-.action-btn:focus-visible { outline: 2px solid rgb(var(--v-theme-primary)) !important; outline-offset: 2px !important; }
+.action-btn:focus-visible, .fixed-btn-size:focus-visible, .nav-icon-btn:focus-visible { 
+  outline: 2px solid rgb(var(--v-theme-primary)) !important; 
+  outline-offset: 2px !important; 
+}
 
 /* High contrast */
 @media (prefers-contrast: high) {
   .navbar { backdrop-filter: none !important; background: rgb(var(--v-theme-surface)) !important; }
   .current-weather-info { backdrop-filter: none !important; background: rgb(var(--v-theme-surface)) !important; border-width: 2px !important; }
+  .fixed-btn-size::before, .nav-icon-btn::before { border-width: 2px !important; }
 }
 </style>

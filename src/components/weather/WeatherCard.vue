@@ -3,7 +3,8 @@
     class="weather-card"
     :class="[
       { 'weather-card--featured': featured },
-      getWeatherBackgroundClass
+      getWeatherBackgroundClass,
+      'animated-weather-card'
     ]"
     elevation="8"
     rounded="xl"
@@ -12,11 +13,11 @@
     <v-card-title class="header-container pa-4 pb-2">
       <!-- City Info Section -->
       <div class="city-info-container">
-        <h2 class="text-h4 font-weight-bold text-white mb-1 city-title">
+        <h2 class="text-h4 font-weight-bold text-white mb-1 city-title animated-title">
           {{ weatherData.name }}
         </h2>
         <div class="d-flex align-center text-white-secondary">
-          <v-icon size="16" class="me-1">mdi-map-marker</v-icon>
+          <v-icon size="16" class="me-1 location-pulse">mdi-map-marker</v-icon>
           <span class="text-body-2 location-info">
             {{ getDisplayCountryCode(weatherData.sys?.country) }} • {{ getCurrentDateTime }}
           </span>
@@ -88,7 +89,7 @@
           :size="buttonSize"
           @click="shareWeather"
           :disabled="sharing"
-          class="action-btn share-btn"
+          class="action-btn share-btn animated-share"
         >
           <v-icon 
             color="white" 
@@ -109,39 +110,41 @@
       <div class="d-flex align-center justify-space-between">
         <div class="temperature-section">
           <div class="temperature-display d-flex align-baseline">
-            <span class="text-h1 font-weight-light text-white temperature-main">
+            <span class="text-h1 font-weight-light text-white temperature-main animated-temp">
               {{ getDisplayTemp }}
             </span>
             <span class="text-h3 text-white-secondary temperature-unit">{{ getUnitSymbol }}</span>
           </div>
           
-          <div class="text-body-1 text-white-secondary mb-2">
+          <div class="text-body-1 text-white-secondary mb-2 fade-in-up">
             Feels like {{ getFeelsLikeTemp }}{{ getUnitSymbol }}
           </div>
           
           <!-- High/Low Temperature -->
-          <div class="d-flex align-center text-white-secondary">
-            <v-icon size="16" class="me-1">mdi-arrow-up</v-icon>
+          <div class="d-flex align-center text-white-secondary fade-in-up">
+            <v-icon size="16" class="me-1 temp-arrow-up">mdi-arrow-up</v-icon>
             <span class="me-3">{{ getTempMax }}°</span>
-            <v-icon size="16" class="me-1">mdi-arrow-down</v-icon>
+            <v-icon size="16" class="me-1 temp-arrow-down">mdi-arrow-down</v-icon>
             <span>{{ getTempMin }}°</span>
           </div>
         </div>
         
         <!-- Weather Icon and Condition -->
         <div class="weather-icon-section text-center">
-          <div class="weather-icon-container">
+          <div class="weather-icon-container enhanced-icon-container">
             <div class="weather-animation-icon" :class="getWeatherAnimationClass"></div>
+            <div class="weather-particles" :class="getWeatherParticleClass"></div>
             <v-img
               v-if="weatherData.weather?.[0]?.icon"
               :src="getWeatherIconUrl(weatherData.weather[0].icon)"
               :alt="weatherData.weather[0].description"
               width="80"
               height="80"
-              class="weather-icon"
+              class="weather-icon weather-icon-enhanced"
+              :class="getWeatherIconAnimationClass"
             />
           </div>
-          <div class="text-h6 text-white text-capitalize mt-2 weather-condition">
+          <div class="text-h6 text-white text-capitalize mt-2 weather-condition animated-condition">
             {{ weatherData.weather?.[0]?.description || 'Clear Sky' }}
           </div>
         </div>
@@ -152,9 +155,9 @@
     <v-card-text class="pa-4 pt-0">
       <v-row dense>
         <v-col cols="6" sm="3">
-          <div class="weather-detail-card">
-            <v-icon color="white" size="20" class="mb-2">mdi-water-percent</v-icon>
-            <div class="text-h6 text-white font-weight-bold">
+          <div class="weather-detail-card humidity-detail">
+            <v-icon color="white" size="20" class="mb-2 icon-pulse">mdi-water-percent</v-icon>
+            <div class="text-h6 text-white font-weight-bold animated-number">
               {{ Math.round(weatherData.main?.humidity || 0) }}%
             </div>
             <div class="text-caption text-white-secondary">
@@ -164,9 +167,9 @@
         </v-col>
         
         <v-col cols="6" sm="3">
-          <div class="weather-detail-card">
-            <v-icon color="white" size="20" class="mb-2">mdi-windsock</v-icon>
-            <div class="text-h6 text-white font-weight-bold">
+          <div class="weather-detail-card wind-detail">
+            <v-icon color="white" size="20" class="mb-2 icon-wind">mdi-windsock</v-icon>
+            <div class="text-h6 text-white font-weight-bold animated-number">
               {{ Math.round(getWindSpeed) }} {{ getWindUnit }}
             </div>
             <div class="text-caption text-white-secondary">
@@ -176,9 +179,9 @@
         </v-col>
         
         <v-col cols="6" sm="3">
-          <div class="weather-detail-card">
-            <v-icon color="white" size="20" class="mb-2">mdi-gauge</v-icon>
-            <div class="text-h6 text-white font-weight-bold">
+          <div class="weather-detail-card pressure-detail">
+            <v-icon color="white" size="20" class="mb-2 icon-bounce">mdi-gauge</v-icon>
+            <div class="text-h6 text-white font-weight-bold animated-number">
               {{ Math.round(weatherData.main?.pressure || 1013) }}
             </div>
             <div class="text-caption text-white-secondary">
@@ -188,9 +191,9 @@
         </v-col>
         
         <v-col cols="6" sm="3">
-          <div class="weather-detail-card">
-            <v-icon color="white" size="20" class="mb-2">mdi-eye</v-icon>
-            <div class="text-h6 text-white font-weight-bold">
+          <div class="weather-detail-card visibility-detail">
+            <v-icon color="white" size="20" class="mb-2 icon-fade">mdi-eye</v-icon>
+            <div class="text-h6 text-white font-weight-bold animated-number">
               {{ Math.round((weatherData.visibility || 10000) / 1000) }} km
             </div>
             <div class="text-caption text-white-secondary">
@@ -203,12 +206,18 @@
 
     <!-- Footer with Additional Info -->
     <v-card-text class="pa-4 pt-0">
-      <div class="d-flex justify-space-between align-center text-white-secondary">
-        <div class="text-caption">
-          {{ getSunTime('sunrise') }}<br>
-          {{ getSunTime('sunset') }}
+      <div class="d-flex justify-space-between align-center text-white-secondary footer-content">
+        <div class="text-caption sun-times">
+          <div class="sun-item">
+            <v-icon size="16" color="orange" class="me-1">mdi-weather-sunset-up</v-icon>
+            {{ getSunTime('sunrise') }}
+          </div>
+          <div class="sun-item mt-1">
+            <v-icon size="16" color="deep-orange" class="me-1">mdi-weather-sunset-down</v-icon>
+            {{ getSunTime('sunset') }}
+          </div>
         </div>
-        <div class="text-caption text-right">
+        <div class="text-caption text-right update-info">
           Updated {{ getLastUpdated }}
         </div>
       </div>
@@ -363,9 +372,45 @@ export default {
         return 'rain-animation'
       } else if (weatherMain.includes('snow')) {
         return 'snow-animation'
+      } else if (weatherMain.includes('thunderstorm') || weatherMain.includes('thunder')) {
+        return 'storm-animation'
       }
       
       return 'sun-animation'
+    },
+
+    getWeatherParticleClass() {
+      const weatherMain = this.weatherData.weather?.[0]?.main?.toLowerCase() || 'clear'
+      
+      if (weatherMain.includes('clear')) {
+        return 'particles-sunny'
+      } else if (weatherMain.includes('rain')) {
+        return 'particles-rain'
+      } else if (weatherMain.includes('snow')) {
+        return 'particles-snow'
+      } else if (weatherMain.includes('thunderstorm')) {
+        return 'particles-storm'
+      }
+      
+      return 'particles-default'
+    },
+
+    getWeatherIconAnimationClass() {
+      const weatherMain = this.weatherData.weather?.[0]?.main?.toLowerCase() || 'clear'
+      
+      if (weatherMain.includes('clear')) {
+        return 'icon-sunny'
+      } else if (weatherMain.includes('cloud')) {
+        return 'icon-cloudy'
+      } else if (weatherMain.includes('rain')) {
+        return 'icon-rainy'
+      } else if (weatherMain.includes('snow')) {
+        return 'icon-snowy'
+      } else if (weatherMain.includes('thunderstorm')) {
+        return 'icon-stormy'
+      }
+      
+      return 'icon-default'
     },
     
     getDisplayTemp() {
@@ -800,6 +845,22 @@ export default {
   overflow: hidden;
 }
 
+/* Enhanced card entrance animation */
+.animated-weather-card {
+  animation: cardSlideIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes cardSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 /* Weather backgrounds */
 .weather-clear {
   background: linear-gradient(135deg, #FF7B54 0%, #FF9A56 50%, #FFAD84 100%);
@@ -848,6 +909,32 @@ export default {
 .weather-card > * {
   position: relative;
   z-index: 2;
+}
+
+/* Enhanced title animation */
+.animated-title {
+  animation: titleGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes titleGlow {
+  0% { 
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+    transform: translateX(0);
+  }
+  100% { 
+    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.6));
+    transform: translateX(2px);
+  }
+}
+
+/* Location pulse animation */
+.location-pulse {
+  animation: locationPulse 2s ease-in-out infinite;
+}
+
+@keyframes locationPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
 }
 
 /* Header layout - prevents overlap */
@@ -945,6 +1032,16 @@ export default {
   transform: none !important;
 }
 
+/* Enhanced share button animation */
+.animated-share:hover {
+  animation: shareGlow 0.6s ease forwards;
+}
+
+@keyframes shareGlow {
+  0% { box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.2); }
+  100% { box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4); }
+}
+
 /* Enhanced favorite button states */
 .favorite-btn.favorite-active {
   background: rgba(244, 67, 54, 0.25) !important;
@@ -974,7 +1071,77 @@ export default {
   box-shadow: 0 0 20px rgba(33, 150, 243, 0.4);
 }
 
-/* Weather animations */
+/* Enhanced temperature animation */
+.animated-temp {
+  animation: temperaturePulse 4s ease-in-out infinite, temperatureCountUp 1.5s cubic-bezier(0.23, 1, 0.320, 1) forwards;
+}
+
+@keyframes temperaturePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+@keyframes temperatureCountUp {
+  0% { 
+    opacity: 0; 
+    transform: translateY(20px) scale(0.8); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+  }
+}
+
+/* Temperature arrows animation */
+.temp-arrow-up {
+  color: #ff5722 !important;
+  animation: arrowBounceUp 2s ease-in-out infinite;
+}
+
+.temp-arrow-down {
+  color: #2196f3 !important;
+  animation: arrowBounceDown 2s ease-in-out infinite;
+}
+
+@keyframes arrowBounceUp {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+@keyframes arrowBounceDown {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(2px); }
+}
+
+/* Fade in up animation for supporting text */
+.fade-in-up {
+  animation: fadeInUp 0.8s ease forwards;
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced weather icon container */
+.enhanced-icon-container {
+  position: relative;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  padding: 10px;
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  display: inline-block;
+  overflow: visible;
+}
+
+/* Weather animation icon */
 .weather-animation-icon {
   position: absolute;
   top: 50%;
@@ -990,45 +1157,337 @@ export default {
 
 .sun-animation {
   background: radial-gradient(circle, #FFD700 0%, #FF8C00 100%);
-  animation: sunshine 4s ease-in-out infinite alternate;
+  animation: sunshine 4s ease-in-out infinite alternate, sunRotate 20s linear infinite;
 }
 
 .cloud-animation {
   background: radial-gradient(circle, #B0B0B0 0%, #808080 100%);
-  animation: float 3s ease-in-out infinite;
+  animation: cloudFloat 8s ease-in-out infinite;
 }
 
 .rain-animation {
   background: radial-gradient(circle, #4169E1 0%, #191970 100%);
-  animation: rain-pulse 2s ease-in-out infinite;
+  animation: rainPulse 2s ease-in-out infinite;
 }
 
 .snow-animation {
   background: radial-gradient(circle, #F0F8FF 0%, #B0E0E6 100%);
-  animation: snowfall 3s ease-in-out infinite;
+  animation: snowDrift 6s ease-in-out infinite;
 }
 
-/* Button animations */
+.storm-animation {
+  background: radial-gradient(circle, #4B0082 0%, #2F4F4F 100%);
+  animation: stormFlash 2s ease-in-out infinite;
+}
+
+/* Weather icon specific animations */
+.icon-sunny {
+  animation: iconSunny 20s linear infinite, iconGlow 3s ease-in-out infinite alternate;
+}
+
+.icon-cloudy {
+  animation: iconFloat 8s ease-in-out infinite;
+}
+
+.icon-rainy {
+  animation: iconRain 1.5s ease-in-out infinite;
+}
+
+.icon-snowy {
+  animation: iconSnow 6s ease-in-out infinite;
+}
+
+.icon-stormy {
+  animation: iconStorm 2s ease-in-out infinite;
+}
+
+/* Weather particles */
+.weather-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.particles-sunny::after {
+  content: '✨';
+  position: absolute;
+  top: 20%;
+  left: 80%;
+  animation: sparkle 3s ease-in-out infinite;
+}
+
+.particles-rain::before,
+.particles-rain::after {
+  content: '💧';
+  position: absolute;
+  font-size: 12px;
+  animation: rainDrop 2s ease-in-out infinite;
+}
+
+.particles-rain::before {
+  top: 10%;
+  left: 30%;
+  animation-delay: 0.5s;
+}
+
+.particles-rain::after {
+  top: 15%;
+  left: 70%;
+}
+
+.particles-snow::before,
+.particles-snow::after {
+  content: '❄️';
+  position: absolute;
+  font-size: 10px;
+  animation: snowFall 4s ease-in-out infinite;
+}
+
+.particles-snow::before {
+  top: 5%;
+  left: 25%;
+  animation-delay: 1s;
+}
+
+.particles-snow::after {
+  top: 10%;
+  left: 75%;
+  animation-delay: 2s;
+}
+
+/* Animation keyframes */
 @keyframes sunshine {
   0% { opacity: 0.4; transform: translateY(-50%) scale(1); }
   100% { opacity: 0.6; transform: translateY(-50%) scale(1.1); }
 }
 
-@keyframes float {
+@keyframes sunRotate {
+  from { transform: translateY(-50%) rotate(0deg); }
+  to { transform: translateY(-50%) rotate(360deg); }
+}
+
+@keyframes cloudFloat {
   0%, 100% { transform: translateY(-50%) translateX(0); }
   50% { transform: translateY(-50%) translateX(5px); }
 }
 
-@keyframes rain-pulse {
+@keyframes rainPulse {
   0%, 100% { opacity: 0.4; }
   50% { opacity: 0.7; }
 }
 
-@keyframes snowfall {
+@keyframes snowDrift {
   0%, 100% { transform: translateY(-50%) rotate(0deg); }
   50% { transform: translateY(-50%) rotate(180deg); }
 }
 
+@keyframes stormFlash {
+  0%, 90%, 100% { opacity: 0.4; }
+  5%, 15% { opacity: 0.8; }
+}
+
+@keyframes iconSunny {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes iconGlow {
+  0% { filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.6)); }
+  100% { filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.9)); }
+}
+
+@keyframes iconFloat {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(3px); }
+}
+
+@keyframes iconRain {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@keyframes iconSnow {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(180deg); }
+}
+
+@keyframes iconStorm {
+  0%, 90%, 100% { opacity: 1; }
+  5%, 15% { opacity: 0.3; }
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 0; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+@keyframes rainDrop {
+  0% { transform: translateY(-10px); opacity: 1; }
+  100% { transform: translateY(40px); opacity: 0; }
+}
+
+@keyframes snowFall {
+  0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(40px) rotate(360deg); opacity: 0; }
+}
+
+/* Enhanced weather icon */
+.weather-icon-enhanced {
+  position: relative;
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+.weather-icon-enhanced:hover {
+  transform: scale(1.1) rotate(5deg);
+}
+
+/* Enhanced weather condition */
+.animated-condition {
+  animation: conditionFadeIn 1s ease 0.5s both;
+}
+
+@keyframes conditionFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Detail card enhancements */
+.weather-detail-card {
+  text-align: center;
+  padding: 16px 12px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
+  overflow: hidden;
+}
+
+.weather-detail-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.weather-detail-card:hover::before {
+  left: 100%;
+}
+
+.weather-detail-card:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Specific detail card animations */
+.humidity-detail:hover {
+  box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+}
+
+.wind-detail:hover {
+  box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);
+}
+
+.pressure-detail:hover {
+  box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+}
+
+.visibility-detail:hover {
+  box-shadow: 0 4px 15px rgba(156, 39, 176, 0.3);
+}
+
+/* Icon specific animations */
+.icon-pulse {
+  animation: iconPulse 2s ease-in-out infinite;
+}
+
+.icon-wind {
+  animation: iconWind 3s ease-in-out infinite;
+}
+
+.icon-bounce {
+  animation: iconBounce 2s ease-in-out infinite;
+}
+
+.icon-fade {
+  animation: iconFade 3s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+@keyframes iconWind {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(5deg); }
+  75% { transform: rotate(-5deg); }
+}
+
+@keyframes iconBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes iconFade {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Animated numbers */
+.animated-number {
+  animation: numberCountUp 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes numberCountUp {
+  0% { 
+    opacity: 0; 
+    transform: scale(0.3) rotateY(90deg); 
+  }
+  70% { 
+    transform: scale(1.1) rotateY(0deg); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: scale(1) rotateY(0deg); 
+  }
+}
+
+/* Footer content animation */
+.footer-content {
+  animation: footerSlideIn 0.8s ease 0.8s both;
+}
+
+@keyframes footerSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Button animations */
 @keyframes animate-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
@@ -1120,23 +1579,23 @@ export default {
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-.weather-detail-card {
-  text-align: center;
-  padding: 16px 12px;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
-  backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  transition: all 0.2s ease;
-}
-
-.weather-detail-card:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
-}
-
 .text-white, .text-h4, .text-h6, .text-body-1, .text-body-2, .text-caption {
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.sun-times .sun-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.update-info {
+  animation: updateInfoPulse 4s ease-in-out infinite;
+}
+
+@keyframes updateInfoPulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
 }
 
 /* Responsive adjustments for round buttons */
@@ -1208,6 +1667,18 @@ export default {
     width: 50px;
     height: 50px;
   }
+
+  /* Reduce animation intensity on mobile */
+  .animated-weather-card,
+  .animated-title,
+  .animated-temp {
+    animation-duration: 1.5s;
+  }
+
+  .sun-animation,
+  .cloud-animation {
+    animation-duration: 8s;
+  }
 }
 
 @media (max-width: 400px) {
@@ -1269,12 +1740,29 @@ export default {
 @media (prefers-reduced-motion: reduce) {
   .action-btn,
   .weather-animation-icon,
-  .weather-card {
+  .weather-card,
+  .animated-weather-card,
+  .animated-title,
+  .animated-temp,
+  .animated-condition,
+  .animated-number,
+  .weather-icon-enhanced,
+  .location-pulse,
+  .temp-arrow-up,
+  .temp-arrow-down,
+  .icon-pulse,
+  .icon-wind,
+  .icon-bounce,
+  .icon-fade {
     transition: none !important;
     animation: none !important;
   }
   
   .action-btn:hover:not(:disabled) {
+    transform: none !important;
+  }
+
+  .weather-icon-enhanced:hover {
     transform: none !important;
   }
 }
