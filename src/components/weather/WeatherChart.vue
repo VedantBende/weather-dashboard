@@ -19,13 +19,13 @@
         </v-btn-toggle>
         
         <v-btn-toggle v-model="selectedMetric" mandatory class="ml-2 control-toggle metric-toggle">
-          <v-btn size="small" value="temperature" class="control-btn metric-btn">
+          <v-btn size="small" value="temperature" class="control-btn metric-btn" title="Temperature">
             <v-icon class="metric-icon">mdi-thermometer</v-icon>
           </v-btn>
-          <v-btn size="small" value="humidity" class="control-btn metric-btn">
+          <v-btn size="small" value="humidity" class="control-btn metric-btn" title="Humidity">
             <v-icon class="metric-icon">mdi-water-percent</v-icon>
           </v-btn>
-          <v-btn size="small" value="wind" class="control-btn metric-btn">
+          <v-btn size="small" value="wind" class="control-btn metric-btn" title="Wind Speed">
             <v-icon class="metric-icon">mdi-weather-windy</v-icon>
           </v-btn>
         </v-btn-toggle>
@@ -80,7 +80,6 @@
       </div>
       
       <div v-else class="forecast-container slide-in">
-        <!-- Enhanced 5-Day Weather Forecast Cards -->
         <div v-if="selectedPeriod === '5d'" class="forecast-cards-section mb-6">
           <div class="forecast-header mb-4">
             <h3 class="forecast-title text-subtitle-1 font-weight-bold d-flex align-center justify-center">
@@ -92,7 +91,6 @@
             </div>
           </div>
           
-          <!-- Equal-Spaced Cards Grid -->
           <div class="forecast-cards-grid">
             <div 
               v-for="(day, index) in fiveDayForecast" 
@@ -109,7 +107,6 @@
                 elevation="0"
               >
                 <v-card-text class="forecast-card-content text-center">
-                  <!-- Date Header -->
                   <div class="forecast-date-container mb-3">
                     <div class="forecast-date text-body-2 font-weight-bold">
                       {{ day.dateLabel }}
@@ -119,7 +116,6 @@
                     </div>
                   </div>
                   
-                  <!-- Weather Icon with Animation -->
                   <div class="forecast-icon-container my-3">
                     <div class="weather-icon-wrapper">
                       <img 
@@ -132,7 +128,6 @@
                     </div>
                   </div>
                   
-                  <!-- Temperature Display -->
                   <div class="forecast-temps mb-3">
                     <div class="temp-range">
                       <span class="temp-max text-h6 font-weight-bold">
@@ -148,12 +143,10 @@
                     </div>
                   </div>
                   
-                  <!-- Weather Description -->
                   <div class="forecast-desc text-body-2 font-weight-medium mb-3">
                     {{ day.description }}
                   </div>
                   
-                  <!-- Precipitation Chance -->
                   <div class="precipitation-section mb-3" v-if="day.precipitation > 0">
                     <div class="precipitation-header">
                       <v-icon size="14" class="me-1" color="blue">mdi-water</v-icon>
@@ -170,7 +163,6 @@
                     </div>
                   </div>
                   
-                  <!-- Detailed Weather Info -->
                   <div class="forecast-details">
                     <div class="detail-row">
                       <div class="detail-item">
@@ -180,17 +172,6 @@
                       <div class="detail-item">
                         <v-icon size="12" class="me-1">mdi-water-percent</v-icon>
                         <span class="detail-text">{{ day.humidity }}%</span>
-                      </div>
-                    </div>
-                    
-                    <div class="detail-row mt-2">
-                      <div class="detail-item">
-                        <v-icon size="12" class="me-1" color="orange">mdi-weather-sunset-up</v-icon>
-                        <span class="detail-text">{{ day.sunrise }}</span>
-                      </div>
-                      <div class="detail-item">
-                        <v-icon size="12" class="me-1" color="deep-orange">mdi-weather-sunset-down</v-icon>
-                        <span class="detail-text">{{ day.sunset }}</span>
                       </div>
                     </div>
                     
@@ -216,7 +197,6 @@
           </div>
         </div>
 
-        <!-- Enhanced Chart Container -->
         <div class="chart-section">
           <div class="chart-header mb-3">
             <h4 class="chart-title text-subtitle-2 font-weight-bold d-flex align-center justify-center">
@@ -241,7 +221,6 @@
           </div>
         </div>
         
-        <!-- Enhanced Chart Statistics with Equal Spacing -->
         <div class="chart-stats mt-6">
           <div class="stats-header mb-3">
             <h4 class="stats-title text-subtitle-2 font-weight-bold d-flex align-center justify-center">
@@ -305,7 +284,6 @@
           </div>
         </div>
         
-        <!-- Enhanced City Info Footer -->
         <div class="chart-footer mt-4">
           <v-card variant="tonal" class="footer-card">
             <v-card-text class="footer-card-text text-center py-3">
@@ -335,6 +313,7 @@
 <script>
 import Chart from 'chart.js/auto'
 import { useTheme } from 'vuetify'
+import { useWeatherStore } from '@/store/weather'
 
 export default {
   name: 'WeatherChart',
@@ -348,7 +327,8 @@ export default {
   
   setup() {
     const theme = useTheme()
-    return { theme }
+    const weatherStore = useWeatherStore()
+    return { theme, weatherStore }
   },
   
   data() {
@@ -385,8 +365,7 @@ export default {
     
     hasData() {
       const data = this.currentData
-      return data && data.labels && data.labels.length > 0 && 
-             data.temperatures && data.temperatures.length > 0
+      return data && data.labels && data.labels.length > 0
     },
 
     fiveDayForecast() {
@@ -445,15 +424,13 @@ export default {
           isTomorrow,
           iconUrl: `https://openweathermap.org/img/wn/${weatherInfo.icon}@2x.png`,
           description: this.capitalize(weatherInfo.description),
-          tempMax: Math.round(tempMax),
-          tempMin: Math.round(tempMin),
-          feelsLike: Math.round(avgTemp + 2),
+          tempMax: Math.round(this.convertTemperature(tempMax)),
+          tempMin: Math.round(this.convertTemperature(tempMin)),
+          feelsLike: Math.round(this.convertTemperature(avgTemp + 2)),
           humidity: Math.round(group.humidity.reduce((a, b) => a + b, 0) / group.humidity.length),
           windSpeed: Math.round(group.wind.reduce((a, b) => a + b, 0) / group.wind.length),
           weatherType: weatherInfo.main.toLowerCase(),
           precipitation: Math.min(Math.round(group.humidity.reduce((a, b) => a + b, 0) / group.humidity.length * 0.8), 90),
-          sunrise: this.formatTime(this.forecastData.city.sunrise),
-          sunset: this.formatTime(this.forecastData.city.sunset),
           uvIndex: Math.floor(Math.random() * 11) + 1
         }
       })
@@ -472,11 +449,44 @@ export default {
     chartData() {
       if (!this.hasData) return null
       const data = this.currentData
+      
+      if (this.selectedMetric === 'temperature' && this.selectedPeriod === '5d') {
+        return {
+          labels: data.labels,
+          datasets: [
+            {
+              label: 'High',
+              data: data.highs,
+              borderColor: 'rgb(255, 99, 132)',
+              backgroundColor: 'rgba(255, 99, 132, 0.2)',
+              fill: true, tension: 0.4,
+              pointBackgroundColor: 'rgb(255, 99, 132)',
+              pointBorderColor: '#fff', pointBorderWidth: 3,
+              pointRadius: 5, pointHoverRadius: 8,
+              borderWidth: 3
+            },
+            {
+              label: 'Low',
+              data: data.lows,
+              borderColor: 'rgb(54, 162, 235)',
+              backgroundColor: 'rgba(54, 162, 235, 0.2)',
+              fill: true, tension: 0.4,
+              pointBackgroundColor: 'rgb(54, 162, 235)',
+              pointBorderColor: '#fff', pointBorderWidth: 3,
+              pointRadius: 5, pointHoverRadius: 8,
+              borderWidth: 3
+            }
+          ]
+        }
+      }
+      
       let values = [], label = '', color = '', gradient = null
       
       switch (this.selectedMetric) {
         case 'temperature':
-          values = data.temperatures; label = 'Temperature (°C)'; color = 'rgb(255, 99, 132)'
+          values = data.temperatures; 
+          label = `Temperature (${this.getUnitSymbol()})`; 
+          color = 'rgb(255, 99, 132)'
           gradient = ['rgba(255, 99, 132, 0.4)', 'rgba(255, 99, 132, 0.1)']
           break
         case 'humidity':
@@ -508,7 +518,9 @@ export default {
         maintainAspectRatio: false,
         interaction: { intersect: false, mode: 'index' },
         plugins: {
-          legend: { display: false },
+          legend: { 
+            display: this.selectedMetric === 'temperature' && this.selectedPeriod === '5d' 
+          },
           tooltip: {
             backgroundColor: this.isDarkMode ? 'rgba(40, 40, 40, 0.95)' : 'rgba(255, 255, 255, 0.95)',
             titleColor: this.chartTextColor,
@@ -561,12 +573,25 @@ export default {
     
     stats() {
       if (!this.hasData) return { max: 0, min: 0, avg: 0, trend: 'Stable' }
-      const values = this.chartData.datasets[0].data
-      const max = Math.max(...values), min = Math.min(...values)
-      const avg = Math.round(values.reduce((a, b) => a + b, 0) / values.length)
-      const trend = values[values.length - 1] > values[0] ? 'Rising' : 
+      
+      if (this.selectedMetric === 'temperature' && this.selectedPeriod === '5d') {
+        const highs = this.chartData.datasets[0].data
+        const lows = this.chartData.datasets[1].data
+        const max = Math.max(...highs)
+        const min = Math.min(...lows)
+        const avg = Math.round([...highs, ...lows].reduce((a, b) => a + b, 0) / (highs.length + lows.length))
+        const trend = highs[highs.length - 1] > highs[0] ? 'Rising' : 
+                     highs[highs.length - 1] < highs[0] ? 'Falling' : 'Stable'
+        return { max: Math.round(max), min: Math.round(min), avg, trend }
+      } else {
+        const values = this.chartData.datasets[0].data
+        const max = Math.max(...values)
+        const min = Math.min(...values)
+        const avg = Math.round(values.reduce((a, b) => a + b, 0) / values.length)
+        const trend = values[values.length - 1] > values[0] ? 'Rising' : 
                    values[values.length - 1] < values[0] ? 'Falling' : 'Stable'
-      return { max: Math.round(max), min: Math.round(min), avg, trend }
+        return { max: Math.round(max), min: Math.round(min), avg, trend }
+      }
     },
     
     trendColorClass() {
@@ -607,6 +632,13 @@ export default {
     isDarkMode(newValue, oldValue) {
       if (oldValue !== undefined && newValue !== oldValue && this.chart) {
         console.log('Theme changed, updating chart colors')
+        this.scheduleChartUpdate(true)
+      }
+    },
+
+    // Watch for unit changes from the weather store
+    'weatherStore.unit'(newUnit, oldUnit) {
+      if (oldUnit && newUnit !== oldUnit) {
         this.scheduleChartUpdate(true)
       }
     }
@@ -664,11 +696,26 @@ export default {
       }
     },
     
+    convertTemperature(celsiusTemp) {
+      const unit = this.weatherStore?.unit || 'celsius'
+      
+      if (unit === 'fahrenheit') {
+        return (celsiusTemp * 9/5) + 32
+      } else {
+        return celsiusTemp
+      }
+    },
+    
+    getUnitSymbol() {
+      const unit = this.weatherStore?.unit || 'celsius'
+      return unit === 'fahrenheit' ? '°F' : '°C'
+    },
+    
     process24HourData() {
       if (!this.forecastData || !this.forecastData.list) return null
       const entries = this.forecastData.list.slice(0, 8)
       const labels = entries.map(entry => new Date(entry.dt * 1000).toLocaleTimeString('en-US', { hour: 'numeric', hour12: true }))
-      const temperatures = entries.map(entry => Math.round(entry.main.temp))
+      const temperatures = entries.map(entry => Math.round(this.convertTemperature(entry.main.temp)))
       const humidity = entries.map(entry => entry.main.humidity)
       const wind = entries.map(entry => Math.round(entry.wind.speed * 3.6))
       return { labels, temperatures, humidity, wind }
@@ -679,8 +726,12 @@ export default {
       const dailyData = {}
       this.forecastData.list.forEach(entry => {
         const dayKey = new Date(entry.dt * 1000).toDateString()
-        if (!dailyData[dayKey]) dailyData[dayKey] = { date: dayKey, temps: [], humidities: [], winds: [] }
+        if (!dailyData[dayKey]) {
+          dailyData[dayKey] = { date: dayKey, temps: [], temps_max: [], temps_min: [], humidities: [], winds: [] }
+        }
         dailyData[dayKey].temps.push(entry.main.temp)
+        dailyData[dayKey].temps_max.push(entry.main.temp_max)
+        dailyData[dayKey].temps_min.push(entry.main.temp_min)
         dailyData[dayKey].humidities.push(entry.main.humidity)
         dailyData[dayKey].winds.push(entry.wind.speed * 3.6)
       })
@@ -692,10 +743,13 @@ export default {
                date.toDateString() === tomorrow.toDateString() ? 'Tomorrow' :
                date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
       })
-      const temperatures = days.map(day => Math.round(day.temps.reduce((s, t) => s + t, 0) / day.temps.length))
+      const temperatures = days.map(day => Math.round(this.convertTemperature(day.temps.reduce((s, t) => s + t, 0) / day.temps.length)))
       const humidity = days.map(day => Math.round(day.humidities.reduce((s, h) => s + h, 0) / day.humidities.length))
       const wind = days.map(day => Math.round(day.winds.reduce((s, w) => s + w, 0) / day.winds.length))
-      return { labels, temperatures, humidity, wind }
+      const highs = days.map(day => Math.round(this.convertTemperature(Math.max(...day.temps_max))))
+      const lows = days.map(day => Math.round(this.convertTemperature(Math.min(...day.temps_min))))
+      
+      return { labels, temperatures, humidity, wind, highs, lows }
     },
     
     scheduleChartUpdate(immediate = false) {
@@ -719,12 +773,13 @@ export default {
     },
     
     getUnit() {
-      return this.selectedMetric === 'temperature' ? '°C' : 
+      return this.selectedMetric === 'temperature' ? this.getUnitSymbol() : 
              this.selectedMetric === 'humidity' ? '%' : 
              this.selectedMetric === 'wind' ? ' km/h' : ''
     },
 
     capitalize(str) {
+      if (!str) return ''
       return str.split(' ').map(word => 
         word.charAt(0).toUpperCase() + word.slice(1)
       ).join(' ')
@@ -765,10 +820,12 @@ export default {
     },
 
     getMinPercentage() {
+      if (this.stats.max === 0) return 20;
       return Math.max(20, (this.stats.min / this.stats.max) * 100)
     },
 
     getAvgPercentage() {
+      if (this.stats.max === 0) return 30;
       return Math.max(30, (this.stats.avg / this.stats.max) * 100)
     }
   }
@@ -776,6 +833,7 @@ export default {
 </script>
 
 <style scoped>
+/* All existing styles remain unchanged */
 /* ===================
    RESPONSIVE FOUNDATION
    =================== */

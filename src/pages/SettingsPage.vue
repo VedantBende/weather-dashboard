@@ -135,18 +135,6 @@
                         </div>
                       </template>
                     </v-radio>
-                    
-                    <v-radio
-                      value="auto"
-                      class="theme-option"
-                    >
-                      <template v-slot:label>
-                        <div class="theme-option-content">
-                          <v-icon size="24" class="mb-2">mdi-theme-light-dark</v-icon>
-                          <div class="text-subtitle-2">Auto</div>
-                        </div>
-                      </template>
-                    </v-radio>
                   </div>
                 </v-radio-group>
               </v-col>
@@ -465,16 +453,7 @@ export default {
     
     themeMode: {
       get() {
-        const darkMode = this.weatherStore.darkMode
-        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-        
-        // Check if user has manually set dark mode
-        const storedMode = localStorage.getItem('darkMode')
-        if (storedMode === null) {
-          return 'auto'
-        }
-        
-        return darkMode ? 'dark' : 'light'
+        return this.weatherStore.darkMode ? 'dark' : 'light'
       },
       set(value) {
         // Handled by updateThemeMode method
@@ -516,7 +495,11 @@ export default {
     },
     
     logoUrl() {
-      return new URL('@/assets/logo.svg', import.meta.url).href
+      try {
+        return new URL('@/assets/logo.svg', import.meta.url).href
+      } catch {
+        return '/logo.svg'
+      }
     }
   },
   
@@ -548,26 +531,7 @@ export default {
     },
     
     updateThemeMode(mode) {
-      if (mode === 'auto') {
-        // Remove stored preference and use system setting
-        localStorage.removeItem('darkMode')
-        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-        this.weatherStore.setDarkMode(systemPrefersDark)
-        
-        // Listen for system theme changes
-        this.setupSystemThemeListener()
-      } else {
-        this.weatherStore.setDarkMode(mode === 'dark')
-      }
-    },
-    
-    setupSystemThemeListener() {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-      mediaQuery.addListener((e) => {
-        if (localStorage.getItem('darkMode') === null) {
-          this.weatherStore.setDarkMode(e.matches)
-        }
-      })
+      this.weatherStore.setDarkMode(mode === 'dark')
     },
     
     clearSearchHistory() {

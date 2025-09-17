@@ -1,13 +1,13 @@
 <template>
   <div class="dashboard-page">
-    <!-- Page header -->
-    <div class="dashboard-header mb-6">
+    <!-- Page header - Responsive layout matching original design -->
+    <div class="dashboard-header mb-4 mb-md-6">
       <div class="d-flex flex-column flex-md-row align-start align-md-center justify-space-between">
-        <div class="header-content mb-4 mb-md-0">
-          <h1 class="text-h4 font-weight-bold mb-2">
+        <div class="header-content mb-3 mb-md-0">
+          <h1 class="dashboard-title text-h5 text-md-h4 font-weight-bold mb-1 mb-md-2">
             Weather Dashboard
           </h1>
-          <p class="text-body-1 text-medium-emphasis">
+          <p class="dashboard-subtitle text-body-2 text-md-body-1 text-medium-emphasis">
             {{ getCurrentDateString() }}
           </p>
         </div>
@@ -16,7 +16,7 @@
           <WeatherSearch 
             variant="compact"
             @city-selected="handleCitySelected"
-            class="mb-2 mb-md-0"
+            class="header-search mb-2 mb-md-0"
           />
         </div>
       </div>
@@ -27,7 +27,7 @@
       <Loader 
         type="weather" 
         text="Loading weather data..."
-        size="lg"
+        :size="$vuetify.display.mobile ? 'md' : 'lg'"
       />
     </div>
 
@@ -44,13 +44,13 @@
     <!-- Main content -->
     <div v-else-if="currentWeather" class="dashboard-content">
       <!-- Primary weather card -->
-      <v-row class="mb-6">
+      <v-row class="main-weather-row mb-4 mb-md-6">
         <v-col cols="12">
           <WeatherCard 
             :key="weatherCardKey"
             :weather-data="currentWeather"
             :loading="loading"
-            class="animate-fade-in"
+            class="animate-fade-in main-weather-card"
             @refresh="handleRefresh"
             @favorite-toggle="handleFavoriteToggle"
             @share="handleShare"
@@ -60,57 +60,65 @@
       </v-row>
 
       <!-- Secondary information grid -->
-      <v-row class="mb-6">
+      <v-row class="secondary-content-row mb-4 mb-md-6">
         <!-- Weather details -->
-        <v-col cols="12" lg="8">
+        <v-col cols="12" lg="8" xl="8" class="weather-details-col">
           <WeatherDetails 
             :weather-data="currentWeather"
-            class="animate-fade-in"
+            class="animate-fade-in weather-details-card"
             style="animation-delay: 0.1s"
           />
         </v-col>
 
         <!-- Quick stats sidebar -->
-        <v-col cols="12" lg="4">
+        <v-col cols="12" lg="4" xl="4" class="quick-stats-col">
           <div class="quick-stats">
             <!-- Air Quality Card -->
             <AirQuality
               :latitude="currentLatitude"
               :longitude="currentLongitude" 
               :api-key="apiKey"
-              class="glass-effect mb-4 animate-fade-in"
+              class="glass-effect air-quality-card mb-3 mb-md-4 animate-fade-in"
               style="animation-delay: 0.2s"
             />
 
             <!-- Quick actions -->
-            <v-card class="glass-effect animate-fade-in" style="animation-delay: 0.3s">
-              <v-card-title class="text-subtitle-1">
-                <v-icon class="mr-2">mdi-flash</v-icon>
+            <v-card class="glass-effect quick-actions-card animate-fade-in" style="animation-delay: 0.3s">
+              <v-card-title class="quick-actions-title text-subtitle-2 text-md-subtitle-1 pa-3 pa-md-4">
+                <v-icon class="mr-2" :size="$vuetify.display.mobile ? 'small' : 'default'">mdi-flash</v-icon>
                 Quick Actions
               </v-card-title>
-              <v-card-text class="pa-2">
-                <v-list nav density="compact">
+              <v-card-text class="pa-2 pa-md-3">
+                <v-list nav density="compact" class="quick-actions-list">
                   <v-list-item
                     prepend-icon="mdi-crosshairs-gps"
                     title="Use Current Location"
+                    :subtitle="$vuetify.display.mobile ? null : 'Get weather for your location'"
                     @click="fetchLocationWeather"
                     :loading="loadingLocation"
+                    class="quick-action-item"
                   />
                   <v-list-item
                     prepend-icon="mdi-refresh"
                     title="Refresh Data"
+                    :subtitle="$vuetify.display.mobile ? null : 'Update current weather'"
                     @click="refreshWeather"
                     :loading="loading"
+                    class="quick-action-item"
                   />
                   <v-list-item
                     :prepend-icon="isFavorite ? 'mdi-heart' : 'mdi-heart-outline'"
                     :title="isFavorite ? 'Remove from Favorites' : 'Add to Favorites'"
+                    :subtitle="$vuetify.display.mobile ? null : (isFavorite ? 'Remove this city' : 'Save this city')"
                     @click="toggleFavorite"
+                    class="quick-action-item"
                   />
                   <v-list-item
                     prepend-icon="mdi-share-variant"
                     title="Share Weather"
+                    :subtitle="$vuetify.display.mobile ? null : 'Share current conditions'"
                     @click="shareWeather"
+                    class="quick-action-item"
                   />
                 </v-list>
               </v-card-text>
@@ -120,13 +128,13 @@
       </v-row>
 
       <!-- WEATHER FORECAST CHART - REAL API INTEGRATION -->
-      <v-row class="mb-6">
+      <v-row class="forecast-chart-row mb-4 mb-md-6">
         <v-col cols="12">
           <WeatherChart 
             :key="`chart-${weatherCardKey}-${currentWeather.dt}`"
             :loading="loading"
             :weather-data="currentWeather"
-            class="animate-fade-in"
+            class="animate-fade-in forecast-chart-card"
             style="animation-delay: 0.4s"
             @show-snackbar="handleShowSnackbar"
           />
@@ -134,57 +142,69 @@
       </v-row>
 
       <!-- Additional insights -->
-      <v-row>
-        <v-col cols="12" md="6">
-          <v-card class="glass-effect animate-fade-in" style="animation-delay: 0.5s">
-            <v-card-title class="text-subtitle-1">
-              <v-icon class="mr-2">mdi-lightbulb</v-icon>
+      <v-row class="insights-row">
+        <v-col cols="12" md="6" class="insights-col">
+          <v-card class="glass-effect insights-card animate-fade-in" style="animation-delay: 0.5s">
+            <v-card-title class="insights-title text-subtitle-2 text-md-subtitle-1 pa-3 pa-md-4">
+              <v-icon class="mr-2" :size="$vuetify.display.mobile ? 'small' : 'default'">mdi-lightbulb</v-icon>
               Weather Insights
             </v-card-title>
-            <v-card-text>
-              <div class="insights-list">
+            <v-card-text class="pa-3 pa-md-4">
+              <div v-if="weatherInsights.length > 0" class="insights-list">
                 <div 
                   v-for="insight in weatherInsights"
                   :key="insight.id"
-                  class="insight-item d-flex align-center mb-3"
+                  class="insight-item d-flex align-center mb-2 mb-md-3"
                 >
                   <v-icon 
                     :color="insight.color"
-                    size="small"
-                    class="mr-3"
+                    :size="$vuetify.display.mobile ? 'small' : 'default'"
+                    class="mr-2 mr-md-3 insight-icon"
                   >
                     {{ insight.icon }}
                   </v-icon>
-                  <span class="text-body-2">{{ insight.text }}</span>
+                  <span class="text-caption text-md-body-2 insight-text">{{ insight.text }}</span>
+                </div>
+              </div>
+              <div v-else class="no-insights text-center py-4 py-md-6">
+                <v-icon :size="$vuetify.display.mobile ? '40' : '48'" color="grey">mdi-lightbulb-outline</v-icon>
+                <div class="text-caption text-md-body-2 text-medium-emphasis mt-2">
+                  No specific insights for current conditions
+                </div>
+                <div class="text-caption text-medium-emphasis mt-1">
+                  Weather conditions are normal
                 </div>
               </div>
             </v-card-text>
           </v-card>
         </v-col>
 
-        <v-col cols="12" md="6">
-          <v-card class="glass-effect animate-fade-in" style="animation-delay: 0.6s">
-            <v-card-title class="text-subtitle-1">
-              <v-icon class="mr-2">mdi-history</v-icon>
+        <v-col cols="12" md="6" class="recent-searches-col">
+          <v-card class="glass-effect recent-searches-card animate-fade-in" style="animation-delay: 0.6s">
+            <v-card-title class="recent-searches-title text-subtitle-2 text-md-subtitle-1 pa-3 pa-md-4">
+              <v-icon class="mr-2" :size="$vuetify.display.mobile ? 'small' : 'default'">mdi-history</v-icon>
               Recent Searches
             </v-card-title>
-            <v-card-text>
-              <div v-if="recentSearches.length > 0">
+            <v-card-text class="pa-3 pa-md-4">
+              <div v-if="recentSearches.length > 0" class="recent-searches-chips">
                 <v-chip
-                  v-for="city in recentSearches.slice(0, 6)"
+                  v-for="city in recentSearches.slice(0, $vuetify.display.mobile ? 4 : 6)"
                   :key="city"
-                  size="small"
+                  :size="$vuetify.display.mobile ? 'small' : 'default'"
                   variant="outlined"
-                  class="ma-1"
+                  class="ma-1 recent-search-chip"
                   @click="searchCity(city)"
                 >
                   {{ city }}
                 </v-chip>
               </div>
-              <div v-else class="text-center py-4">
-                <v-icon size="48" color="grey">mdi-magnify</v-icon>
-                <div class="text-body-2 text-medium-emphasis mt-2">
+              <div v-else class="no-searches text-center py-4 py-md-6">
+                <v-icon :size="$vuetify.display.mobile ? '40' : '48'" color="grey">mdi-magnify</v-icon>
+                <div class="text-caption text-md-body-2 text-medium-emphasis mt-2">
                   No recent searches
+                </div>
+                <div class="text-caption text-medium-emphasis mt-1">
+                  Search for cities to see them here
                 </div>
               </div>
             </v-card-text>
@@ -194,67 +214,95 @@
     </div>
 
     <!-- Empty state -->
-    <div v-else class="empty-state text-center py-12">
-      <v-icon size="120" color="grey">mdi-weather-partly-cloudy</v-icon>
-      <h2 class="text-h5 font-weight-bold mt-4 mb-2">
+    <div v-else class="empty-state text-center py-8 py-md-12">
+      <v-icon :size="$vuetify.display.mobile ? '80' : '120'" color="grey" class="empty-state-icon">
+        mdi-weather-partly-cloudy
+      </v-icon>
+      <h2 class="empty-state-title text-h6 text-md-h5 font-weight-bold mt-3 mt-md-4 mb-2">
         Welcome to Weather Dashboard
       </h2>
-      <p class="text-body-1 text-medium-emphasis mb-6 max-w-md mx-auto">
+      <p class="empty-state-subtitle text-body-2 text-md-body-1 text-medium-emphasis mb-4 mb-md-6 max-w-md mx-auto px-4">
         Get started by searching for a city or allowing location access to see your local weather.
       </p>
       <div class="empty-state-actions">
         <v-btn
           color="primary"
-          size="large"
+          :size="$vuetify.display.mobile ? 'default' : 'large'"
           prepend-icon="mdi-crosshairs-gps"
           @click="fetchLocationWeather"
           :loading="loadingLocation"
-          class="mr-2 mb-2"
+          class="mr-2 mb-2 empty-state-btn"
         >
           Use My Location
         </v-btn>
         <v-btn
           variant="outlined"
-          size="large"
+          :size="$vuetify.display.mobile ? 'default' : 'large'"
           prepend-icon="mdi-magnify"
           @click="focusSearch"
-          class="mb-2"
+          class="mb-2 empty-state-btn"
         >
           Search Cities
         </v-btn>
       </div>
     </div>
 
-    <!-- Snackbar for notifications -->
-    <v-snackbar
-      v-model="snackbar.show"
-      :color="snackbar.color"
-      :timeout="snackbar.timeout"
-      location="bottom right"
-    >
-      {{ snackbar.message }}
-      <template v-slot:actions>
-        <v-btn
-          variant="text"
-          @click="snackbar.show = false"
-        >
-          Close
-        </v-btn>
-      </template>
-    </v-snackbar>
+    <!-- Custom Snackbar with Enhanced Auto-Hide - Desktop: Bottom Right, Mobile: Bottom Center -->
+    <transition name="snackbar-fade" appear>
+      <div 
+        v-if="snackbar.show" 
+        class="custom-snackbar"
+        :class="[
+          `custom-snackbar--${snackbar.color}`, 
+          { 
+            'custom-snackbar--mobile': $vuetify.display.mobile,
+            'custom-snackbar--tablet': $vuetify.display.smAndDown && !$vuetify.display.mobile,
+            'custom-snackbar--desktop': $vuetify.display.mdAndUp,
+            'custom-snackbar--fading': snackbar.isClosing
+          }
+        ]"
+      >
+        <div class="custom-snackbar__content">
+          <span class="custom-snackbar__message">{{ snackbar.message }}</span>
+          <v-btn
+            variant="text"
+            size="small"
+            @click="hideSnackbar"
+            class="custom-snackbar__close"
+            color="white"
+          >
+            Close
+          </v-btn>
+        </div>
+        
+        <!-- Progress bar for timeout visualization -->
+        <div 
+          v-if="snackbar.timeout > 0 && !snackbar.isClosing" 
+          class="custom-snackbar__progress"
+          :style="{ animationDuration: `${snackbar.timeout}ms` }"
+        ></div>
+      </div>
+    </transition>
 
     <!-- Share dialog -->
-    <v-dialog v-model="showShareDialog" max-width="400">
-      <v-card>
-        <v-card-title>Share Weather</v-card-title>
-        <v-card-text>
+    <v-dialog 
+      v-model="showShareDialog" 
+      :max-width="$vuetify.display.mobile ? '90vw' : '400'"
+      :fullscreen="false"
+      class="share-dialog"
+    >
+      <v-card class="share-dialog-card">
+        <v-card-title class="share-dialog-title text-h6 pa-4">Share Weather</v-card-title>
+        <v-card-text class="pa-4">
           <div class="share-content text-center">
             <div class="share-weather-info mb-4">
-              <div class="text-h6">{{ currentWeather?.name }}</div>
-              <div class="text-h4 font-weight-bold text-primary">
+              <div class="text-subtitle-1 text-md-h6">{{ currentWeather?.name }}</div>
+              <div class="text-h5 text-md-h4 font-weight-bold text-primary mt-2">
                 {{ currentTemp }}{{ unitSymbol }}
               </div>
-              <div class="text-body-1">{{ currentWeather?.weather[0]?.description }}</div>
+              <div class="text-body-2 text-md-body-1 text-capitalize mt-1">
+                {{ currentWeather?.weather[0]?.description }}
+              </div>
             </div>
             
             <div class="share-actions">
@@ -262,7 +310,8 @@
                 variant="outlined"
                 prepend-icon="mdi-content-copy"
                 @click="copyWeatherInfo"
-                class="mr-2 mb-2"
+                class="mr-2 mb-2 share-action-btn"
+                :size="$vuetify.display.mobile ? 'small' : 'default'"
               >
                 Copy
               </v-btn>
@@ -270,16 +319,21 @@
                 variant="outlined"
                 prepend-icon="mdi-twitter"
                 @click="shareOnTwitter"
-                class="mb-2"
+                class="mb-2 share-action-btn"
+                :size="$vuetify.display.mobile ? 'small' : 'default'"
               >
                 Twitter
               </v-btn>
             </div>
           </div>
         </v-card-text>
-        <v-card-actions>
+        <v-card-actions class="pa-4">
           <v-spacer />
-          <v-btn variant="text" @click="showShareDialog = false">
+          <v-btn 
+            variant="text" 
+            @click="showShareDialog = false"
+            :size="$vuetify.display.mobile ? 'small' : 'default'"
+          >
             Close
           </v-btn>
         </v-card-actions>
@@ -322,8 +376,11 @@ export default {
         show: false,
         message: '',
         color: 'info',
-        timeout: 3000
-      }
+        timeout: 3000,
+        isClosing: false
+      },
+      snackbarTimer: null,
+      snackbarCloseTimer: null
     }
   },
   
@@ -339,6 +396,27 @@ export default {
         }
       },
       deep: true
+    },
+
+    'snackbar.show'(newValue) {
+      if (newValue) {
+        // Reset closing state when showing
+        this.snackbar.isClosing = false
+        
+        // Clear any existing timers
+        this.clearSnackbarTimers()
+        
+        // Set auto-hide timer if timeout is specified
+        if (this.snackbar.timeout > 0) {
+          console.log(`⏰ Snackbar will auto-hide in ${this.snackbar.timeout}ms`)
+          this.snackbarTimer = setTimeout(() => {
+            this.hideSnackbar()
+          }, this.snackbar.timeout)
+        }
+      } else {
+        // Clear timers when hiding
+        this.clearSnackbarTimers()
+      }
     }
   },
   
@@ -470,29 +548,69 @@ export default {
       await this.initializeWeatherData()
     }
   },
+
+  beforeUnmount() {
+    this.clearSnackbarTimers()
+  },
   
   methods: {
     forceComponentsRerender() {
       this.weatherCardKey += 1
       console.log('🔑 Components keys updated to:', this.weatherCardKey)
     },
+
+    clearSnackbarTimers() {
+      if (this.snackbarTimer) {
+        clearTimeout(this.snackbarTimer)
+        this.snackbarTimer = null
+      }
+      if (this.snackbarCloseTimer) {
+        clearTimeout(this.snackbarCloseTimer)
+        this.snackbarCloseTimer = null
+      }
+    },
     
     showSnackbar(options) {
+      console.log('📢 Showing snackbar:', options.message)
+      
+      // Clear any existing timers
+      this.clearSnackbarTimers()
+      
+      // Set snackbar data
       this.snackbar = {
         show: true,
         message: options.message,
         color: options.color || 'info',
-        timeout: options.timeout || 3000
+        timeout: options.timeout !== undefined ? options.timeout : 3000,
+        isClosing: false
       }
+    },
+
+    hideSnackbar() {
+      console.log('❌ Hiding snackbar')
+      
+      // Start fade out animation
+      this.snackbar.isClosing = true
+      
+      // Clear main timer
+      if (this.snackbarTimer) {
+        clearTimeout(this.snackbarTimer)
+        this.snackbarTimer = null
+      }
+      
+      // Hide after fade animation completes
+      this.snackbarCloseTimer = setTimeout(() => {
+        this.snackbar.show = false
+        this.snackbar.isClosing = false
+      }, 300) // Match CSS transition duration
     },
     
     getCurrentDateString() {
-      return new Date().toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      })
+      const options = this.$vuetify.display.mobile 
+        ? { weekday: 'short', month: 'short', day: 'numeric' }
+        : { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
+      
+      return new Date().toLocaleDateString('en-US', options)
     },
     
     async getCurrentLocation() {
@@ -695,80 +813,674 @@ export default {
 </script>
 
 <style scoped>
+/* ===== DESKTOP FIRST - ORIGINAL STYLING (≥1200px) ===== */
+
+/* Base responsive container - Original desktop styling */
 .dashboard-page {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 16px;
+  padding: 0 clamp(8px, 2vw, 16px);
+  min-height: 100vh;
+  box-sizing: border-box;
 }
 
+/* Dashboard header - Original desktop background and layout */
 .dashboard-header {
   background: rgba(var(--v-theme-surface), 0.5);
-  border-radius: 16px;
-  padding: 24px;
+  border-radius: clamp(12px, 2vw, 16px);
+  padding: clamp(16px, 3vw, 24px);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(var(--v-border-color), 0.12);
+  margin-bottom: 0;
 }
 
+.header-content {
+  flex: 1;
+}
+
+/* Desktop title styling - ORIGINAL */
+.dashboard-title {
+  font-size: clamp(1.25rem, 4vw, 2rem) !important;
+  line-height: 1.2;
+  color: white !important;
+  font-weight: 700 !important;
+  margin-bottom: clamp(4px, 1vh, 8px);
+  letter-spacing: -0.025em;
+}
+
+/* Desktop subtitle styling - ORIGINAL */
+.dashboard-subtitle {
+  font-size: clamp(0.875rem, 2vw, 1rem) !important;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.8) !important;
+  font-weight: 400;
+}
+
+/* Header actions - Search on the right for desktop */
+.header-actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.header-search {
+  width: 100% !important;
+  max-width: 400px;
+}
+
+/* Desktop search styling - ORIGINAL but with responsive width */
+.header-search :deep(.v-text-field) {
+  background: rgba(var(--v-theme-surface), 0.1) !important;
+  border-radius: 12px !important;
+}
+
+.header-search :deep(.v-field) {
+  background: rgba(var(--v-theme-surface), 0.1) !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(var(--v-border-color), 0.2) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+.header-search :deep(.v-field--focused) {
+  border-color: rgba(var(--v-theme-primary), 0.4) !important;
+}
+
+.header-search :deep(.v-field__input) {
+  color: white !important;
+  padding: 16px 20px !important;
+  font-size: 1rem !important;
+}
+
+.header-search :deep(.v-field__input::placeholder) {
+  color: rgba(255, 255, 255, 0.7) !important;
+  opacity: 1 !important;
+}
+
+.header-search :deep(.v-field__prepend-inner .v-icon) {
+  color: rgba(255, 255, 255, 0.7) !important;
+  opacity: 1 !important;
+}
+
+.header-search :deep(.v-field__append-inner .v-icon) {
+  color: rgba(255, 255, 255, 0.7) !important;
+  opacity: 1 !important;
+}
+
+.header-search :deep(.v-field):hover {
+  border-color: rgba(var(--v-theme-primary), 0.3) !important;
+}
+
+/* ===== RESPONSIVE BREAKPOINTS ===== */
+
+/* Large Desktop (1024px - 1199px) */
+@media (min-width: 1024px) and (max-width: 1199px) {
+  .dashboard-page {
+    padding: 0 12px;
+  }
+  
+  .dashboard-header {
+    padding: 20px;
+  }
+  
+  .header-search {
+    max-width: 350px;
+  }
+  
+  .header-search :deep(.v-field__input) {
+    padding: 14px 18px !important;
+    font-size: 0.95rem !important;
+  }
+}
+
+/* Tablet Large (768px - 1023px) - Keep horizontal layout */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .dashboard-page {
+    padding: 0 8px;
+  }
+  
+  .dashboard-header {
+    padding: 16px;
+  }
+  
+  .header-search {
+    max-width: 300px;
+  }
+  
+  .header-search :deep(.v-field__input) {
+    padding: 12px 16px !important;
+    font-size: 0.9rem !important;
+  }
+}
+
+/* Tablet Small (601px - 767px) - Still horizontal but smaller */
+@media (min-width: 601px) and (max-width: 767px) {
+  .dashboard-page {
+    padding: 0 6px;
+  }
+  
+  .dashboard-header {
+    padding: 14px;
+  }
+  
+  .header-search {
+    max-width: 280px;
+  }
+  
+  .header-search :deep(.v-field) {
+    border-radius: 10px !important;
+  }
+  
+  .header-search :deep(.v-field__input) {
+    padding: 10px 14px !important;
+    font-size: 0.85rem !important;
+  }
+}
+
+/* Mobile Large (481px - 600px) - Switch to vertical layout */
+@media (min-width: 481px) and (max-width: 600px) {
+  .dashboard-page {
+    padding: 0 4px;
+  }
+  
+  .dashboard-header {
+    padding: 12px;
+  }
+  
+  /* Change to vertical layout for mobile */
+  .dashboard-header .d-flex {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  
+  .header-content {
+    margin-bottom: 12px !important;
+    text-align: center;
+  }
+  
+  .header-actions {
+    justify-content: center;
+  }
+  
+  .header-search {
+    max-width: 100%;
+  }
+  
+  .header-search :deep(.v-field) {
+    border-radius: 8px !important;
+    background: rgba(0, 0, 0, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  }
+  
+  .header-search :deep(.v-field__input) {
+    padding: 8px 12px !important;
+    font-size: 0.8rem !important;
+  }
+}
+
+/* Mobile Medium (361px - 480px) - Full mobile styling */
+@media (min-width: 361px) and (max-width: 480px) {
+  .dashboard-page {
+    padding: 0 3px;
+  }
+  
+  .dashboard-header {
+    padding: 10px;
+  }
+  
+  /* Vertical layout */
+  .dashboard-header .d-flex {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  
+  .header-content {
+    margin-bottom: 10px !important;
+    text-align: center;
+  }
+  
+  .header-actions {
+    justify-content: center;
+  }
+  
+  .header-search :deep(.v-field) {
+    border-radius: 6px !important;
+    background: rgba(0, 0, 0, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  }
+  
+  .header-search :deep(.v-field__input) {
+    padding: 6px 10px !important;
+    font-size: 0.75rem !important;
+  }
+}
+
+/* Mobile Small (≤360px) - Compact mobile styling */
+@media (max-width: 360px) {
+  .dashboard-page {
+    padding: 0 2px;
+  }
+  
+  .dashboard-header {
+    padding: 8px;
+  }
+  
+  /* Vertical layout */
+  .dashboard-header .d-flex {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  
+  .header-content {
+    margin-bottom: 8px !important;
+    text-align: center;
+  }
+  
+  .header-actions {
+    justify-content: center;
+  }
+  
+  .header-search :deep(.v-field) {
+    border-radius: 4px !important;
+    background: rgba(0, 0, 0, 0.25) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  .header-search :deep(.v-field__input) {
+    padding: 4px 8px !important;
+    font-size: 0.7rem !important;
+  }
+  
+  .header-search :deep(.v-field__input::placeholder) {
+    color: rgba(255, 255, 255, 0.5) !important;
+  }
+}
+
+/* ===== REST OF THE STYLES REMAIN THE SAME ===== */
+
+/* Loading and error containers */
 .loading-container,
 .error-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 400px;
+  min-height: clamp(300px, 50vh, 400px);
+  padding: clamp(16px, 4vw, 32px);
 }
 
+/* Main content responsive layout */
 .dashboard-content {
   animation: fadeIn 0.6s ease-out;
 }
 
-.quick-stats .v-card {
-  border-radius: 16px;
+/* Weather card optimizations */
+.main-weather-card {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Secondary content grid */
+.secondary-content-row {
+  margin: 0 -8px -16px -8px;
+}
+
+.weather-details-col,
+.quick-stats-col {
+  padding: 8px;
+}
+
+.weather-details-card,
+.air-quality-card,
+.quick-actions-card {
+  height: 100%;
+  border-radius: clamp(12px, 2vw, 16px);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(var(--v-border-color), 0.12);
+}
+
+/* Quick stats responsive design */
+.quick-stats {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 2vw, 16px);
+  height: 100%;
+}
+
+.quick-actions-title,
+.insights-title,
+.recent-searches-title {
+  padding: clamp(12px, 2vw, 16px) clamp(16px, 3vw, 20px) !important;
+  font-size: clamp(0.875rem, 2vw, 1rem) !important;
+}
+
+.quick-actions-list {
+  padding: 0;
+}
+
+.quick-action-item {
+  border-radius: 8px;
+  margin-bottom: 4px;
+  min-height: clamp(48px, 8vw, 56px);
+  transition: all 0.2s ease;
+}
+
+.quick-action-item:hover {
+  background: rgba(var(--v-theme-primary), 0.04);
+}
+
+/* Forecast chart responsive */
+.forecast-chart-row {
+  margin: 0 -8px -16px -8px;
+}
+
+.forecast-chart-card {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Insights section responsive */
+.insights-row {
+  margin: 0 -8px 0 -8px;
+}
+
+.insights-col,
+.recent-searches-col {
+  padding: 8px;
+}
+
+.insights-card,
+.recent-searches-card {
+  height: 100%;
+  border-radius: clamp(12px, 2vw, 16px);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(var(--v-border-color), 0.12);
 }
 
 .insight-item {
-  padding: 8px 0;
+  padding: clamp(6px, 1vw, 8px) 0;
   border-bottom: 1px solid rgba(var(--v-border-color), 0.06);
+  min-height: clamp(36px, 6vw, 44px);
 }
 
 .insight-item:last-child {
   border-bottom: none;
 }
 
+.insight-icon {
+  flex-shrink: 0;
+}
+
+.insight-text {
+  flex: 1;
+  line-height: 1.4;
+  font-size: clamp(0.75rem, 2vw, 0.875rem) !important;
+}
+
+/* Recent searches responsive */
+.recent-searches-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(4px, 1vw, 8px);
+  justify-content: flex-start;
+}
+
+.recent-search-chip {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: clamp(0.7rem, 1.8vw, 0.875rem) !important;
+}
+
+.recent-search-chip:hover {
+  background: rgba(var(--v-theme-primary), 0.08);
+  transform: translateY(-1px);
+}
+
+.no-searches,
+.no-insights {
+  padding: clamp(16px, 4vw, 24px);
+  text-align: center;
+}
+
+/* Empty state responsive */
 .empty-state {
-  min-height: 400px;
+  min-height: clamp(400px, 60vh, 500px);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  padding: clamp(24px, 6vw, 48px);
+}
+
+.empty-state-icon {
+  opacity: 0.7;
+}
+
+.empty-state-title {
+  font-size: clamp(1.125rem, 3vw, 1.5rem) !important;
+  text-align: center;
+  line-height: 1.3;
+}
+
+.empty-state-subtitle {
+  font-size: clamp(0.875rem, 2vw, 1rem) !important;
+  text-align: center;
+  line-height: 1.5;
+  max-width: 90%;
 }
 
 .empty-state-actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
+  gap: clamp(8px, 2vw, 12px);
+  width: 100%;
+  max-width: 400px;
+}
+
+.empty-state-btn {
+  min-width: clamp(140px, 25vw, 160px);
+}
+
+/* Share dialog responsive */
+.share-dialog-card {
+  border-radius: clamp(12px, 2vw, 16px);
+}
+
+.share-dialog-title {
+  padding: clamp(16px, 3vw, 20px) !important;
+  font-size: clamp(1rem, 2.5vw, 1.25rem) !important;
 }
 
 .share-weather-info {
-  padding: 16px;
+  padding: clamp(12px, 3vw, 16px);
   background: rgba(var(--v-theme-surface), 0.3);
-  border-radius: 8px;
+  border-radius: clamp(8px, 1.5vw, 12px);
+  margin-bottom: clamp(16px, 3vw, 20px);
 }
 
 .share-actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
+  gap: clamp(8px, 2vw, 12px);
+}
+
+.share-action-btn {
+  min-width: clamp(80px, 20vw, 100px);
+}
+
+/* ENHANCED CUSTOM SNACKBAR WITH GUARANTEED 3-SECOND AUTO-HIDE */
+.custom-snackbar {
+  position: fixed !important;
+  z-index: 10000 !important;
+  border-radius: 8px !important;
+  backdrop-filter: blur(15px) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  overflow: hidden !important;
+}
+
+/* Desktop positioning - Bottom Right (like original) */
+.custom-snackbar--desktop {
+  bottom: 24px !important;
+  right: 24px !important;
+  max-width: 400px !important;
+  min-width: 300px !important;
+  transform: none !important;
+}
+
+/* Tablet positioning - Bottom Center */
+.custom-snackbar--tablet {
+  bottom: 16px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  max-width: 500px !important;
+  min-width: 300px !important;
+}
+
+/* Mobile positioning - Bottom Center with margins */
+.custom-snackbar--mobile {
+  bottom: 16px !important;
+  left: 8px !important;
+  right: 8px !important;
+  transform: none !important;
+  max-width: calc(100vw - 16px) !important;
+  min-width: calc(100vw - 16px) !important;
+  width: calc(100vw - 16px) !important;
+}
+
+/* Fade out state */
+.custom-snackbar--fading {
+  opacity: 0 !important;
+  transform: translateY(20px) !important;
+}
+
+.custom-snackbar--desktop.custom-snackbar--fading {
+  transform: translateX(20px) !important;
+}
+
+.custom-snackbar--tablet.custom-snackbar--fading {
+  transform: translateX(-50%) translateY(20px) !important;
+}
+
+.custom-snackbar__content {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 14px 18px !important;
+  width: 100% !important;
+  position: relative !important;
+}
+
+.custom-snackbar__message {
+  flex: 1 !important;
+  color: white !important;
+  font-size: 0.875rem !important;
+  line-height: 1.5 !important;
+  margin-right: 12px !important;
+  word-break: break-word !important;
+  font-weight: 500 !important;
+}
+
+.custom-snackbar__close {
+  flex-shrink: 0 !important;
+  color: white !important;
+  opacity: 0.8 !important;
+  transition: opacity 0.2s ease !important;
+}
+
+.custom-snackbar__close:hover {
+  opacity: 1 !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Progress bar for timeout visualization */
+.custom-snackbar__progress {
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  height: 3px !important;
+  background: rgba(255, 255, 255, 0.3) !important;
+  animation: progressShrink linear !important;
+  animation-fill-mode: forwards !important;
+}
+
+@keyframes progressShrink {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+/* Snackbar color variants with enhanced contrast */
+.custom-snackbar--success {
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.95), rgba(56, 142, 60, 0.95)) !important;
+  border: 1px solid rgba(129, 199, 132, 0.3) !important;
+}
+
+.custom-snackbar--error {
+  background: linear-gradient(135deg, rgba(244, 67, 54, 0.95), rgba(211, 47, 47, 0.95)) !important;
+  border: 1px solid rgba(239, 154, 154, 0.3) !important;
+}
+
+.custom-snackbar--warning {
+  background: linear-gradient(135deg, rgba(255, 152, 0, 0.95), rgba(245, 124, 0, 0.95)) !important;
+  border: 1px solid rgba(255, 204, 128, 0.3) !important;
+}
+
+.custom-snackbar--info {
+  background: linear-gradient(135deg, rgba(33, 150, 243, 0.95), rgba(25, 118, 210, 0.95)) !important;
+  border: 1px solid rgba(144, 202, 249, 0.3) !important;
+}
+
+/* Vue transitions for smooth show/hide */
+.snackbar-fade-enter-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.snackbar-fade-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.snackbar-fade-enter-from {
+  opacity: 0;
+  transform: translateY(50px);
+}
+
+.snackbar-fade-leave-to {
+  opacity: 0;
+  transform: translateY(50px);
+}
+
+/* Desktop specific enter animation */
+.custom-snackbar--desktop.snackbar-fade-enter-from {
+  transform: translateX(50px);
+}
+
+.custom-snackbar--desktop.snackbar-fade-leave-to {
+  transform: translateX(50px);
+}
+
+/* Tablet specific enter animation */
+.custom-snackbar--tablet.snackbar-fade-enter-from {
+  transform: translateX(-50%) translateY(50px);
+}
+
+.custom-snackbar--tablet.snackbar-fade-leave-to {
+  transform: translateX(-50%) translateY(50px);
+}
+
+/* Glass effect */
+.glass-effect {
+  background: rgba(var(--v-theme-surface), 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(var(--v-border-color), 0.12);
 }
 
 /* Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(clamp(10px, 2vw, 20px));
   }
   to {
     opacity: 1;
@@ -780,36 +1492,129 @@ export default {
   animation: fadeIn 0.6s ease-out both;
 }
 
-/* Glass effect */
-.glass-effect {
-  background: rgba(var(--v-theme-surface), 0.8);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(var(--v-border-color), 0.12);
+/* Dark theme adjustments */
+.v-theme--dark .dashboard-header {
+  background: rgba(var(--v-theme-surface), 0.7);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .dashboard-page {
-    padding: 0 8px;
+.v-theme--dark .glass-effect {
+  background: rgba(var(--v-theme-surface), 0.6);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.v-theme--dark .quick-action-item:hover {
+  background: rgba(var(--v-theme-primary), 0.08);
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .snackbar-fade-enter-active,
+  .snackbar-fade-leave-active,
+  .custom-snackbar {
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  .recent-search-chip:hover {
+    transform: none;
+  }
+  
+  .dashboard-content {
+    animation: none;
+  }
+  
+  .quick-action-item {
+    transition: none;
+  }
+
+  .custom-snackbar__progress {
+    animation: none !important;
+  }
+}
+
+@media (prefers-contrast: high) {
+  .glass-effect {
+    background: rgb(var(--v-theme-surface));
+    backdrop-filter: none;
+    border-width: 2px;
   }
   
   .dashboard-header {
+    background: rgb(var(--v-theme-surface));
+    backdrop-filter: none;
+    border-width: 2px;
+  }
+
+  .custom-snackbar {
+    border-width: 2px !important;
+    backdrop-filter: none !important;
+  }
+}
+
+/* Print optimizations */
+@media print {
+  .dashboard-page {
+    max-width: none;
+    padding: 0;
+  }
+  
+  .dashboard-header,
+  .quick-actions-card,
+  .recent-searches-card {
+    display: none;
+  }
+  
+  .glass-effect {
+    background: white;
+    backdrop-filter: none;
+    border: 1px solid #ccc;
+  }
+  
+  .animate-fade-in {
+    animation: none;
+  }
+
+  .custom-snackbar {
+    display: none !important;
+  }
+}
+
+/* Focus states for accessibility */
+.header-search :deep(.v-field--focused) {
+  box-shadow: 0 0 0 2px rgba(var(--v-theme-primary), 0.3) !important;
+}
+
+/* Hover states */
+@media (hover: hover) {
+  .header-search :deep(.v-field):hover {
+    border-color: rgba(var(--v-theme-primary), 0.3) !important;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 600px) and (orientation: landscape) {
+  .empty-state {
+    min-height: 300px;
     padding: 16px;
-    margin-bottom: 16px;
   }
   
-  .header-actions {
-    width: 100%;
+  .loading-container,
+  .error-container {
+    min-height: 250px;
   }
   
-  .empty-state-actions {
-    flex-direction: column;
-    align-items: center;
+  .dashboard-header {
+    padding: 12px;
   }
-  
-  .empty-state-actions .v-btn {
-    width: 200px;
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .glass-effect {
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
   }
 }
 </style>

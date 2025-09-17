@@ -313,24 +313,23 @@ export default {
     },
     
     getUnitSymbol() {
-      return this.weatherStore?.getUnitSymbol || 'C'
+      return this.weatherStore?.getUnitSymbol || '°C'
     },
     
     getWindUnit() {
-      const units = this.weatherStore?.units || 'metric'
-      return units === 'metric' ? 'km/h' : units === 'imperial' ? 'mph' : 'm/s'
+      const unit = this.weatherStore?.unit || 'celsius'
+      return unit === 'celsius' ? 'km/h' : 'mph'
     },
     
     getWindSpeed() {
       const speed = this.weatherData.wind?.speed || 0
-      const units = this.weatherStore?.units || 'metric'
+      const unit = this.weatherStore?.unit || 'celsius'
       
-      if (units === 'metric') {
-        return speed * 3.6
-      } else if (units === 'imperial') {
-        return speed
+      if (unit === 'celsius') {
+        return speed * 3.6 // Convert m/s to km/h
+      } else {
+        return speed * 2.237 // Convert m/s to mph
       }
-      return speed
     },
     
     getWeatherBackgroundClass() {
@@ -505,17 +504,24 @@ export default {
     },
     
     convertTemperature(kelvinTemp) {
-      const units = this.weatherStore?.units || 'metric'
+      const unit = this.weatherStore?.unit || 'celsius'
       
+      // Check if temperature is already in celsius (API sometimes returns celsius directly)
       if (kelvinTemp > 200) {
-        if (units === 'imperial') {
+        // Temperature is in Kelvin, convert it
+        if (unit === 'fahrenheit') {
           return ((kelvinTemp - 273.15) * 9/5) + 32
         } else {
           return kelvinTemp - 273.15
         }
+      } else {
+        // Temperature is already in celsius, convert if needed
+        if (unit === 'fahrenheit') {
+          return (kelvinTemp * 9/5) + 32
+        } else {
+          return kelvinTemp
+        }
       }
-      
-      return kelvinTemp
     },
     
     formatDate(date) {
@@ -665,7 +671,7 @@ export default {
               // Continue to next method
             }
           }
-          
+
           if (!added && this.weatherStore?.toggleFavorite) {
             try {
               await this.weatherStore.toggleFavorite(this.weatherData)
@@ -739,7 +745,7 @@ export default {
         const country = this.getDisplayCountryCode(this.weatherData.sys?.country)
         
         const shareText = `🌤️ Weather in ${this.weatherData.name}, ${country}:\n` +
-                         `🌡️ ${temp}°${this.getUnitSymbol} (feels like ${this.getFeelsLikeTemp}°${this.getUnitSymbol})\n` +
+                         `🌡️ ${temp}${this.getUnitSymbol} (feels like ${this.getFeelsLikeTemp}${this.getUnitSymbol})\n` +
                          `☁️ ${condition}\n` +
                          `💧 Humidity: ${this.weatherData.main?.humidity || 0}%\n` +
                          `💨 Wind: ${Math.round(this.getWindSpeed)} ${this.getWindUnit}\n` +
