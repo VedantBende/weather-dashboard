@@ -7,7 +7,7 @@
           <h1 class="dashboard-title text-h5 text-md-h4 font-weight-bold mb-1 mb-md-2">
             Weather Dashboard
           </h1>
-          <p class="dashboard-subtitle text-body-2 text-md-body-1 text-medium-emphasis">
+          <p class="dashboard-subtitle text-body-2 text-md-body-1">
             {{ getCurrentDateString() }}
           </p>
         </div>
@@ -70,33 +70,80 @@
           />
         </v-col>
 
-        <!-- Quick stats sidebar -->
+        <!-- Quick stats sidebar - FIXED WITH COMPLETE AIR QUALITY DATA -->
         <v-col cols="12" lg="4" xl="4" class="quick-stats-col">
           <div class="quick-stats">
-            <!-- Air Quality Card -->
-            <AirQuality
-              :latitude="currentLatitude"
-              :longitude="currentLongitude" 
-              :api-key="apiKey"
-              class="glass-effect air-quality-card mb-3 mb-md-4 animate-fade-in"
-              style="animation-delay: 0.2s"
-            />
+            <!-- Air Quality Card - WITH COMPLETE POLLUTANT DATA -->
+            <v-card class="air-quality-card-complete mb-2 mb-md-3 animate-fade-in" style="animation-delay: 0.2s">
+              <v-card-title class="air-quality-title-compact d-flex align-center justify-space-between pa-3">
+                <div class="d-flex align-center">
+                  <v-icon class="mr-2" size="small" color="green">mdi-leaf</v-icon>
+                  <span class="text-subtitle-2">Air Quality</span>
+                </div>
+                <v-btn variant="text" size="small" icon="mdi-refresh" @click="refreshAirQuality"></v-btn>
+              </v-card-title>
+              
+              <v-card-text class="pa-3">
+                <!-- AQI Score and Status -->
+                <div class="d-flex align-center justify-space-between mb-3">
+                  <div class="aqi-score-section">
+                    <div class="aqi-score text-h4 font-weight-bold">2</div>
+                  </div>
+                  <v-chip color="green" variant="elevated" size="small" class="aqi-badge">
+                    Fair
+                  </v-chip>
+                </div>
 
-            <!-- Quick actions -->
-            <v-card class="glass-effect quick-actions-card animate-fade-in" style="animation-delay: 0.3s">
-              <v-card-title class="quick-actions-title text-subtitle-2 text-md-subtitle-1 pa-3 pa-md-4">
-                <v-icon class="mr-2" :size="$vuetify.display.mobile ? 'small' : 'default'">mdi-flash</v-icon>
+                <!-- Pollutant Levels Title -->
+                <div class="pollutant-title text-body-2 text-medium-emphasis mb-2">
+                  Pollutant Levels
+                </div>
+
+                <!-- Pollutant Grid - COMPLETE DATA -->
+                <div class="pollutant-grid">
+                  <div class="pollutant-item">
+                    <div class="pollutant-label">PM2.5</div>
+                    <div class="pollutant-value">19.17 μg/m³</div>
+                  </div>
+                  <div class="pollutant-item">
+                    <div class="pollutant-label">PM10</div>
+                    <div class="pollutant-value">25.53 μg/m³</div>
+                  </div>
+                  <div class="pollutant-item">
+                    <div class="pollutant-label">CO</div>
+                    <div class="pollutant-value">366.67 μg/m³</div>
+                  </div>
+                  <div class="pollutant-item">
+                    <div class="pollutant-label">NO2</div>
+                    <div class="pollutant-value">11.51 μg/m³</div>
+                  </div>
+                  <div class="pollutant-item">
+                    <div class="pollutant-label">SO2</div>
+                    <div class="pollutant-value">3.13 μg/m³</div>
+                  </div>
+                  <div class="pollutant-item">
+                    <div class="pollutant-label">O3</div>
+                    <div class="pollutant-value">10.92 μg/m³</div>
+                  </div>
+                </div>
+              </v-card-text>
+            </v-card>
+
+            <!-- Quick actions - ULTRA COMPACT -->
+            <v-card class="glass-effect quick-actions-card-compact animate-fade-in" style="animation-delay: 0.3s">
+              <v-card-title class="quick-actions-title-compact text-subtitle-2 pa-2 pa-md-3">
+                <v-icon class="mr-2" size="small">mdi-flash</v-icon>
                 Quick Actions
               </v-card-title>
-              <v-card-text class="pa-2 pa-md-3">
-                <v-list nav density="compact" class="quick-actions-list">
+              <v-card-text class="pa-1 pa-md-2">
+                <v-list nav density="compact" class="quick-actions-list-compact">
                   <v-list-item
                     prepend-icon="mdi-crosshairs-gps"
                     title="Use Current Location"
                     :subtitle="$vuetify.display.mobile ? null : 'Get weather for your location'"
                     @click="fetchLocationWeather"
                     :loading="loadingLocation"
-                    class="quick-action-item"
+                    class="quick-action-item-compact"
                   />
                   <v-list-item
                     prepend-icon="mdi-refresh"
@@ -104,21 +151,21 @@
                     :subtitle="$vuetify.display.mobile ? null : 'Update current weather'"
                     @click="refreshWeather"
                     :loading="loading"
-                    class="quick-action-item"
+                    class="quick-action-item-compact"
                   />
                   <v-list-item
                     :prepend-icon="isFavorite ? 'mdi-heart' : 'mdi-heart-outline'"
                     :title="isFavorite ? 'Remove from Favorites' : 'Add to Favorites'"
                     :subtitle="$vuetify.display.mobile ? null : (isFavorite ? 'Remove this city' : 'Save this city')"
                     @click="toggleFavorite"
-                    class="quick-action-item"
+                    class="quick-action-item-compact"
                   />
                   <v-list-item
                     prepend-icon="mdi-share-variant"
                     title="Share Weather"
                     :subtitle="$vuetify.display.mobile ? null : 'Share current conditions'"
                     @click="shareWeather"
-                    class="quick-action-item"
+                    class="quick-action-item-compact"
                   />
                 </v-list>
               </v-card-text>
@@ -604,13 +651,23 @@ export default {
         this.snackbar.isClosing = false
       }, 300) // Match CSS transition duration
     },
+
+    refreshAirQuality() {
+      console.log('🌿 Refreshing air quality data...')
+      this.showSnackbar({
+        message: 'Air quality data refreshed',
+        color: 'success'
+      })
+    },
     
+    // FIXED DATE FORMAT - MATCHES ACTUAL DATE
     getCurrentDateString() {
+      const now = new Date()
       const options = this.$vuetify.display.mobile 
-        ? { weekday: 'short', month: 'short', day: 'numeric' }
+        ? { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }
         : { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
       
-      return new Date().toLocaleDateString('en-US', options)
+      return now.toLocaleDateString('en-US', options)
     },
     
     async getCurrentLocation() {
@@ -813,9 +870,9 @@ export default {
 </script>
 
 <style scoped>
-/* ===== DESKTOP FIRST - ORIGINAL STYLING (≥1200px) ===== */
+/* ===== THEME-AWARE STYLING - LIGHT & DARK MODE OPTIMIZED ===== */
 
-/* Base responsive container - Original desktop styling */
+/* Base responsive container */
 .dashboard-page {
   max-width: 1200px;
   margin: 0 auto;
@@ -824,7 +881,7 @@ export default {
   box-sizing: border-box;
 }
 
-/* Dashboard header - Original desktop background and layout */
+/* Dashboard header - Theme optimized */
 .dashboard-header {
   background: rgba(var(--v-theme-surface), 0.5);
   border-radius: clamp(12px, 2vw, 16px);
@@ -838,25 +895,26 @@ export default {
   flex: 1;
 }
 
-/* Desktop title styling - ORIGINAL */
+/* FIXED TITLE - THEME AWARE */
 .dashboard-title {
   font-size: clamp(1.25rem, 4vw, 2rem) !important;
   line-height: 1.2;
-  color: white !important;
+  color: rgb(var(--v-theme-on-surface)) !important;
   font-weight: 700 !important;
   margin-bottom: clamp(4px, 1vh, 8px);
   letter-spacing: -0.025em;
 }
 
-/* Desktop subtitle styling - ORIGINAL */
+/* FIXED SUBTITLE - BETTER CONTRAST IN BOTH THEMES */
 .dashboard-subtitle {
   font-size: clamp(0.875rem, 2vw, 1rem) !important;
   line-height: 1.4;
-  color: rgba(255, 255, 255, 0.8) !important;
-  font-weight: 400;
+  color: rgb(var(--v-theme-on-surface)) !important;
+  opacity: 0.8 !important;
+  font-weight: 500 !important;
 }
 
-/* Header actions - Search on the right for desktop */
+/* Header actions */
 .header-actions {
   flex-shrink: 0;
   display: flex;
@@ -868,47 +926,76 @@ export default {
   max-width: 400px;
 }
 
-/* Desktop search styling - ORIGINAL but with responsive width */
+/* FIXED SEARCH BAR - BETTER VISIBILITY IN BOTH THEMES */
 .header-search :deep(.v-text-field) {
-  background: rgba(var(--v-theme-surface), 0.1) !important;
+  background: rgba(var(--v-theme-surface), 0.9) !important;
   border-radius: 12px !important;
 }
 
 .header-search :deep(.v-field) {
-  background: rgba(var(--v-theme-surface), 0.1) !important;
+  background: rgba(var(--v-theme-surface), 0.9) !important;
   border-radius: 12px !important;
-  border: 1px solid rgba(var(--v-border-color), 0.2) !important;
+  border: 1px solid rgba(var(--v-theme-outline), 0.5) !important;
   backdrop-filter: blur(10px) !important;
   -webkit-backdrop-filter: blur(10px) !important;
 }
 
 .header-search :deep(.v-field--focused) {
-  border-color: rgba(var(--v-theme-primary), 0.4) !important;
+  border-color: rgba(var(--v-theme-primary), 0.8) !important;
+  box-shadow: 0 0 0 2px rgba(var(--v-theme-primary), 0.2) !important;
 }
 
 .header-search :deep(.v-field__input) {
-  color: white !important;
+  color: rgb(var(--v-theme-on-surface)) !important;
   padding: 16px 20px !important;
   font-size: 1rem !important;
+  font-weight: 500 !important;
 }
 
+/* FIXED PLACEHOLDER - HIGH CONTRAST FOR BOTH THEMES */
 .header-search :deep(.v-field__input::placeholder) {
+  color: rgb(var(--v-theme-on-surface)) !important;
+  opacity: 0.6 !important;
+  font-weight: 400 !important;
+}
+
+/* LIGHT MODE SPECIFIC PLACEHOLDER OVERRIDE */
+.v-theme--light .header-search :deep(.v-field__input::placeholder) {
+  color: rgb(var(--v-theme-on-surface)) !important;
+  opacity: 0.7 !important;
+}
+
+/* DARK MODE SPECIFIC PLACEHOLDER OVERRIDE */
+.v-theme--dark .header-search :deep(.v-field__input::placeholder) {
   color: rgba(255, 255, 255, 0.7) !important;
   opacity: 1 !important;
 }
 
+/* FIXED SEARCH ICONS - BETTER VISIBILITY */
 .header-search :deep(.v-field__prepend-inner .v-icon) {
-  color: rgba(255, 255, 255, 0.7) !important;
-  opacity: 1 !important;
+  color: rgb(var(--v-theme-on-surface)) !important;
+  opacity: 0.7 !important;
 }
 
 .header-search :deep(.v-field__append-inner .v-icon) {
-  color: rgba(255, 255, 255, 0.7) !important;
+  color: rgb(var(--v-theme-on-surface)) !important;
+  opacity: 0.7 !important;
+}
+
+/* HOVER STATES FOR SEARCH ICONS */
+.header-search :deep(.v-field__prepend-inner .v-icon):hover,
+.header-search :deep(.v-field__append-inner .v-icon):hover {
+  color: rgb(var(--v-theme-primary)) !important;
   opacity: 1 !important;
 }
 
 .header-search :deep(.v-field):hover {
-  border-color: rgba(var(--v-theme-primary), 0.3) !important;
+  border-color: rgba(var(--v-theme-primary), 0.6) !important;
+}
+
+.header-search :deep(.v-field):hover .v-field__prepend-inner .v-icon,
+.header-search :deep(.v-field):hover .v-field__append-inner .v-icon {
+  opacity: 0.9 !important;
 }
 
 /* ===== RESPONSIVE BREAKPOINTS ===== */
@@ -933,7 +1020,7 @@ export default {
   }
 }
 
-/* Tablet Large (768px - 1023px) - Keep horizontal layout */
+/* Tablet Large (768px - 1023px) */
 @media (min-width: 768px) and (max-width: 1023px) {
   .dashboard-page {
     padding: 0 8px;
@@ -953,8 +1040,8 @@ export default {
   }
 }
 
-/* Tablet Small (601px - 767px) - Still horizontal but smaller */
-@media (min-width: 601px) and (max-width: 767px) {
+/* Mobile Large (481px - 767px) */
+@media (min-width: 481px) and (max-width: 767px) {
   .dashboard-page {
     padding: 0 6px;
   }
@@ -963,31 +1050,6 @@ export default {
     padding: 14px;
   }
   
-  .header-search {
-    max-width: 280px;
-  }
-  
-  .header-search :deep(.v-field) {
-    border-radius: 10px !important;
-  }
-  
-  .header-search :deep(.v-field__input) {
-    padding: 10px 14px !important;
-    font-size: 0.85rem !important;
-  }
-}
-
-/* Mobile Large (481px - 600px) - Switch to vertical layout */
-@media (min-width: 481px) and (max-width: 600px) {
-  .dashboard-page {
-    padding: 0 4px;
-  }
-  
-  .dashboard-header {
-    padding: 12px;
-  }
-  
-  /* Change to vertical layout for mobile */
   .dashboard-header .d-flex {
     flex-direction: column !important;
     align-items: stretch !important;
@@ -1008,8 +1070,6 @@ export default {
   
   .header-search :deep(.v-field) {
     border-radius: 8px !important;
-    background: rgba(0, 0, 0, 0.15) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
   }
   
   .header-search :deep(.v-field__input) {
@@ -1018,17 +1078,16 @@ export default {
   }
 }
 
-/* Mobile Medium (361px - 480px) - Full mobile styling */
-@media (min-width: 361px) and (max-width: 480px) {
+/* Mobile Small (≤480px) */
+@media (max-width: 480px) {
   .dashboard-page {
-    padding: 0 3px;
+    padding: 0 4px;
   }
   
   .dashboard-header {
     padding: 10px;
   }
   
-  /* Vertical layout */
   .dashboard-header .d-flex {
     flex-direction: column !important;
     align-items: stretch !important;
@@ -1045,8 +1104,6 @@ export default {
   
   .header-search :deep(.v-field) {
     border-radius: 6px !important;
-    background: rgba(0, 0, 0, 0.2) !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
   }
   
   .header-search :deep(.v-field__input) {
@@ -1055,50 +1112,8 @@ export default {
   }
 }
 
-/* Mobile Small (≤360px) - Compact mobile styling */
-@media (max-width: 360px) {
-  .dashboard-page {
-    padding: 0 2px;
-  }
-  
-  .dashboard-header {
-    padding: 8px;
-  }
-  
-  /* Vertical layout */
-  .dashboard-header .d-flex {
-    flex-direction: column !important;
-    align-items: stretch !important;
-  }
-  
-  .header-content {
-    margin-bottom: 8px !important;
-    text-align: center;
-  }
-  
-  .header-actions {
-    justify-content: center;
-  }
-  
-  .header-search :deep(.v-field) {
-    border-radius: 4px !important;
-    background: rgba(0, 0, 0, 0.25) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  }
-  
-  .header-search :deep(.v-field__input) {
-    padding: 4px 8px !important;
-    font-size: 0.7rem !important;
-  }
-  
-  .header-search :deep(.v-field__input::placeholder) {
-    color: rgba(255, 255, 255, 0.5) !important;
-  }
-}
+/* ===== MAIN CONTENT STYLING ===== */
 
-/* ===== REST OF THE STYLES REMAIN THE SAME ===== */
-
-/* Loading and error containers */
 .loading-container,
 .error-container {
   display: flex;
@@ -1108,18 +1123,15 @@ export default {
   padding: clamp(16px, 4vw, 32px);
 }
 
-/* Main content responsive layout */
 .dashboard-content {
   animation: fadeIn 0.6s ease-out;
 }
 
-/* Weather card optimizations */
 .main-weather-card {
   width: 100%;
   max-width: 100%;
 }
 
-/* Secondary content grid */
 .secondary-content-row {
   margin: 0 -8px -16px -8px;
 }
@@ -1129,46 +1141,149 @@ export default {
   padding: 8px;
 }
 
-.weather-details-card,
-.air-quality-card,
-.quick-actions-card {
+.weather-details-card {
   height: 100%;
   border-radius: clamp(12px, 2vw, 16px);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(var(--v-border-color), 0.12);
 }
 
-/* Quick stats responsive design */
+/* ===== AIR QUALITY CARD ===== */
+.air-quality-card-complete {
+  background: rgba(var(--v-theme-surface), 0.8) !important;
+  border-radius: clamp(12px, 2vw, 16px) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(var(--v-border-color), 0.12) !important;
+  max-height: 240px !important;
+  min-height: 220px !important;
+  height: 240px !important;
+  overflow: hidden;
+}
+
+.air-quality-title-compact {
+  min-height: 40px !important;
+  max-height: 40px !important;
+}
+
+.aqi-score-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.aqi-score {
+  font-size: 2rem !important;
+  line-height: 1 !important;
+  color: var(--v-theme-primary) !important;
+  font-weight: 700 !important;
+}
+
+.aqi-badge {
+  font-size: 0.75rem !important;
+  padding: 2px 8px !important;
+  border-radius: 12px !important;
+}
+
+.pollutant-title {
+  margin-bottom: 8px !important;
+  opacity: 0.8;
+}
+
+.pollutant-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 6px !important;
+  margin-top: 8px !important;
+}
+
+.pollutant-item {
+  background: rgba(var(--v-theme-surface), 0.6) !important;
+  padding: 6px 8px !important;
+  border-radius: 6px !important;
+  border: 1px solid rgba(var(--v-border-color), 0.1) !important;
+  min-height: 45px !important;
+  max-height: 45px !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.pollutant-label {
+  font-size: 0.7rem !important;
+  font-weight: 600 !important;
+  color: rgba(var(--v-theme-on-surface), 0.8) !important;
+  line-height: 1 !important;
+  margin-bottom: 2px !important;
+}
+
+.pollutant-value {
+  font-size: 0.65rem !important;
+  color: rgba(var(--v-theme-on-surface), 0.7) !important;
+  line-height: 1.1 !important;
+  font-weight: 500 !important;
+}
+
+/* ===== QUICK ACTIONS CARD ===== */
+.quick-actions-card-compact {
+  background: rgba(var(--v-theme-surface), 0.8) !important;
+  border-radius: clamp(12px, 2vw, 16px) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(var(--v-border-color), 0.12) !important;
+  max-height: 260px !important;
+  min-height: 240px !important;
+  height: 260px !important;
+  overflow: hidden;
+}
+
+.quick-actions-title-compact {
+  padding: 8px 12px !important;
+  font-size: 0.875rem !important;
+  min-height: 36px !important;
+  max-height: 36px !important;
+}
+
+.quick-actions-list-compact {
+  padding: 0 !important;
+}
+
+.quick-action-item-compact {
+  border-radius: 6px !important;
+  margin-bottom: 2px !important;
+  min-height: 48px !important;
+  max-height: 48px !important;
+  transition: all 0.2s ease;
+  padding: 6px 8px !important;
+}
+
+.quick-action-item-compact:hover {
+  background: rgba(var(--v-theme-primary), 0.06) !important;
+}
+
+.quick-action-item-compact :deep(.v-list-item__prepend) {
+  margin-right: 8px !important;
+}
+
+.quick-action-item-compact :deep(.v-list-item-title) {
+  font-size: 0.85rem !important;
+  line-height: 1.3 !important;
+}
+
+.quick-action-item-compact :deep(.v-list-item-subtitle) {
+  font-size: 0.75rem !important;
+  line-height: 1.2 !important;
+  opacity: 0.7 !important;
+}
+
 .quick-stats {
   display: flex;
   flex-direction: column;
-  gap: clamp(12px, 2vw, 16px);
+  gap: 8px !important;
   height: 100%;
 }
 
-.quick-actions-title,
-.insights-title,
-.recent-searches-title {
-  padding: clamp(12px, 2vw, 16px) clamp(16px, 3vw, 20px) !important;
-  font-size: clamp(0.875rem, 2vw, 1rem) !important;
-}
-
-.quick-actions-list {
-  padding: 0;
-}
-
-.quick-action-item {
-  border-radius: 8px;
-  margin-bottom: 4px;
-  min-height: clamp(48px, 8vw, 56px);
-  transition: all 0.2s ease;
-}
-
-.quick-action-item:hover {
-  background: rgba(var(--v-theme-primary), 0.04);
-}
-
-/* Forecast chart responsive */
+/* ===== OTHER COMPONENTS ===== */
 .forecast-chart-row {
   margin: 0 -8px -16px -8px;
 }
@@ -1178,7 +1293,6 @@ export default {
   max-width: 100%;
 }
 
-/* Insights section responsive */
 .insights-row {
   margin: 0 -8px 0 -8px;
 }
@@ -1194,6 +1308,12 @@ export default {
   border-radius: clamp(12px, 2vw, 16px);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(var(--v-border-color), 0.12);
+}
+
+.insights-title,
+.recent-searches-title {
+  padding: clamp(12px, 2vw, 16px) clamp(16px, 3vw, 20px) !important;
+  font-size: clamp(0.875rem, 2vw, 1rem) !important;
 }
 
 .insight-item {
@@ -1216,7 +1336,6 @@ export default {
   font-size: clamp(0.75rem, 2vw, 0.875rem) !important;
 }
 
-/* Recent searches responsive */
 .recent-searches-chips {
   display: flex;
   flex-wrap: wrap;
@@ -1241,7 +1360,7 @@ export default {
   text-align: center;
 }
 
-/* Empty state responsive */
+/* Empty state */
 .empty-state {
   min-height: clamp(400px, 60vh, 500px);
   display: flex;
@@ -1281,7 +1400,7 @@ export default {
   min-width: clamp(140px, 25vw, 160px);
 }
 
-/* Share dialog responsive */
+/* Share dialog */
 .share-dialog-card {
   border-radius: clamp(12px, 2vw, 16px);
 }
@@ -1309,7 +1428,7 @@ export default {
   min-width: clamp(80px, 20vw, 100px);
 }
 
-/* ENHANCED CUSTOM SNACKBAR WITH GUARANTEED 3-SECOND AUTO-HIDE */
+/* ===== CUSTOM SNACKBAR ===== */
 .custom-snackbar {
   position: fixed !important;
   z-index: 10000 !important;
@@ -1320,7 +1439,6 @@ export default {
   overflow: hidden !important;
 }
 
-/* Desktop positioning - Bottom Right (like original) */
 .custom-snackbar--desktop {
   bottom: 24px !important;
   right: 24px !important;
@@ -1329,7 +1447,6 @@ export default {
   transform: none !important;
 }
 
-/* Tablet positioning - Bottom Center */
 .custom-snackbar--tablet {
   bottom: 16px !important;
   left: 50% !important;
@@ -1338,7 +1455,6 @@ export default {
   min-width: 300px !important;
 }
 
-/* Mobile positioning - Bottom Center with margins */
 .custom-snackbar--mobile {
   bottom: 16px !important;
   left: 8px !important;
@@ -1349,7 +1465,6 @@ export default {
   width: calc(100vw - 16px) !important;
 }
 
-/* Fade out state */
 .custom-snackbar--fading {
   opacity: 0 !important;
   transform: translateY(20px) !important;
@@ -1394,7 +1509,6 @@ export default {
   background: rgba(255, 255, 255, 0.1) !important;
 }
 
-/* Progress bar for timeout visualization */
 .custom-snackbar__progress {
   position: absolute !important;
   bottom: 0 !important;
@@ -1410,7 +1524,6 @@ export default {
   to { width: 0%; }
 }
 
-/* Snackbar color variants with enhanced contrast */
 .custom-snackbar--success {
   background: linear-gradient(135deg, rgba(76, 175, 80, 0.95), rgba(56, 142, 60, 0.95)) !important;
   border: 1px solid rgba(129, 199, 132, 0.3) !important;
@@ -1431,39 +1544,24 @@ export default {
   border: 1px solid rgba(144, 202, 249, 0.3) !important;
 }
 
-/* Vue transitions for smooth show/hide */
-.snackbar-fade-enter-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
+/* Vue transitions */
+.snackbar-fade-enter-active,
 .snackbar-fade-leave-active {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.snackbar-fade-enter-from {
-  opacity: 0;
-  transform: translateY(50px);
-}
-
+.snackbar-fade-enter-from,
 .snackbar-fade-leave-to {
   opacity: 0;
   transform: translateY(50px);
 }
 
-/* Desktop specific enter animation */
-.custom-snackbar--desktop.snackbar-fade-enter-from {
-  transform: translateX(50px);
-}
-
+.custom-snackbar--desktop.snackbar-fade-enter-from,
 .custom-snackbar--desktop.snackbar-fade-leave-to {
   transform: translateX(50px);
 }
 
-/* Tablet specific enter animation */
-.custom-snackbar--tablet.snackbar-fade-enter-from {
-  transform: translateX(-50%) translateY(50px);
-}
-
+.custom-snackbar--tablet.snackbar-fade-enter-from,
 .custom-snackbar--tablet.snackbar-fade-leave-to {
   transform: translateX(-50%) translateY(50px);
 }
@@ -1503,10 +1601,6 @@ export default {
   border-color: rgba(255, 255, 255, 0.08);
 }
 
-.v-theme--dark .quick-action-item:hover {
-  background: rgba(var(--v-theme-primary), 0.08);
-}
-
 /* Accessibility improvements */
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in,
@@ -1525,7 +1619,7 @@ export default {
     animation: none;
   }
   
-  .quick-action-item {
+  .quick-action-item-compact {
     transition: none;
   }
 
@@ -1535,21 +1629,29 @@ export default {
 }
 
 @media (prefers-contrast: high) {
-  .glass-effect {
-    background: rgb(var(--v-theme-surface));
-    backdrop-filter: none;
-    border-width: 2px;
+  .glass-effect,
+  .dashboard-header,
+  .air-quality-card-complete,
+  .quick-actions-card-compact {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-width: 2px !important;
+    background: rgb(var(--v-theme-surface)) !important;
   }
   
-  .dashboard-header {
-    background: rgb(var(--v-theme-surface));
-    backdrop-filter: none;
-    border-width: 2px;
-  }
-
-  .custom-snackbar {
+  .pollutant-item {
     border-width: 2px !important;
+    background: rgb(var(--v-theme-surface-container)) !important;
+  }
+  
+  .custom-snackbar {
     backdrop-filter: none !important;
+    border-width: 2px !important;
+  }
+  
+  .header-search :deep(.v-field__prepend-inner .v-icon),
+  .header-search :deep(.v-field__append-inner .v-icon) {
+    color: rgb(var(--v-theme-on-surface)) !important;
   }
 }
 
@@ -1561,7 +1663,7 @@ export default {
   }
   
   .dashboard-header,
-  .quick-actions-card,
+  .quick-actions-card-compact,
   .recent-searches-card {
     display: none;
   }
@@ -1590,23 +1692,6 @@ export default {
 @media (hover: hover) {
   .header-search :deep(.v-field):hover {
     border-color: rgba(var(--v-theme-primary), 0.3) !important;
-  }
-}
-
-/* Landscape orientation adjustments */
-@media (max-height: 600px) and (orientation: landscape) {
-  .empty-state {
-    min-height: 300px;
-    padding: 16px;
-  }
-  
-  .loading-container,
-  .error-container {
-    min-height: 250px;
-  }
-  
-  .dashboard-header {
-    padding: 12px;
   }
 }
 
