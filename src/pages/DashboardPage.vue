@@ -80,7 +80,16 @@
                   <v-icon class="mr-2" size="small" color="green">mdi-leaf</v-icon>
                   <span class="text-subtitle-2">Air Quality</span>
                 </div>
-                <v-btn variant="text" size="small" icon="mdi-refresh" @click="refreshAirQuality"></v-btn>
+                <v-btn 
+                  variant="text" 
+                  size="small" 
+                  icon="mdi-refresh" 
+                  @click="refreshAirQuality"
+                  @mousedown="handleButtonMouseDown"
+                  @mouseup="handleButtonMouseUp"
+                  class="air-quality-refresh-btn"
+                  tabindex="0"
+                ></v-btn>
               </v-card-title>
               
               <v-card-text class="pa-3">
@@ -652,12 +661,34 @@ export default {
       }, 300) // Match CSS transition duration
     },
 
+    // ENHANCED REFRESH AIR QUALITY WITH VISUAL FEEDBACK
     refreshAirQuality() {
       console.log('🌿 Refreshing air quality data...')
+      
+      // Add visual feedback class
+      const button = document.querySelector('.air-quality-refresh-btn')
+      if (button) {
+        button.classList.add('btn-clicked')
+        setTimeout(() => {
+          button.classList.remove('btn-clicked')
+        }, 200)
+      }
+      
       this.showSnackbar({
         message: 'Air quality data refreshed',
         color: 'success'
       })
+    },
+
+    // BUTTON INTERACTION HANDLERS
+    handleButtonMouseDown(event) {
+      event.currentTarget.classList.add('btn-clicked')
+    },
+
+    handleButtonMouseUp(event) {
+      setTimeout(() => {
+        event.currentTarget.classList.remove('btn-clicked')
+      }, 150)
     },
     
     // FIXED DATE FORMAT - MATCHES ACTUAL DATE
@@ -1165,6 +1196,279 @@ export default {
   max-height: 40px !important;
 }
 
+/* FIXED AIR QUALITY REFRESH BUTTON - GUARANTEED BLUE BORDER ON CLICK */
+.air-quality-refresh-btn {
+  border-radius: 50% !important;
+  /* Responsive size using clamp for perfect circle across all screens */
+  width: clamp(28px, 4vw, 36px) !important;
+  height: clamp(28px, 4vw, 36px) !important;
+  min-width: clamp(28px, 4vw, 36px) !important;
+  min-height: clamp(28px, 4vw, 36px) !important;
+  max-width: clamp(28px, 4vw, 36px) !important;
+  max-height: clamp(28px, 4vw, 36px) !important;
+  padding: 0 !important;
+  aspect-ratio: 1 / 1 !important; /* Ensures perfect 1:1 ratio for circle */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+}
+
+.air-quality-refresh-btn :deep(.v-btn__content) {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.air-quality-refresh-btn :deep(.v-btn__overlay) {
+  border-radius: 50% !important;
+  aspect-ratio: 1 / 1 !important;
+}
+
+/* REMOVE DEFAULT FOCUS OUTLINE */
+.air-quality-refresh-btn:focus {
+  outline: none !important;
+}
+
+.air-quality-refresh-btn:focus-visible {
+  outline: none !important;
+}
+
+/* GUARANTEED BLUE BORDER ON ALL INTERACTION STATES */
+
+/* PRIMARY METHOD: Using ::after pseudo-element for guaranteed visibility */
+.air-quality-refresh-btn::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  pointer-events: none;
+  transition: border-color 0.2s ease;
+  z-index: 1;
+}
+
+/* FOCUS STATE - Blue border via pseudo-element */
+.air-quality-refresh-btn:focus-visible::after,
+.air-quality-refresh-btn.v-btn--focused::after {
+  border-color: rgb(var(--v-theme-primary)) !important;
+}
+
+/* ACTIVE/CLICK STATE - Blue border via pseudo-element */
+.air-quality-refresh-btn:active::after,
+.air-quality-refresh-btn.v-btn--active::after {
+  border-color: rgb(var(--v-theme-primary)) !important;
+}
+
+/* MOUSEDOWN STATE - Immediate blue border */
+.air-quality-refresh-btn:active::after {
+  border-color: rgb(var(--v-theme-primary)) !important;
+  border-width: 2px !important;
+}
+
+/* BACKUP METHOD: Direct box-shadow approach */
+.air-quality-refresh-btn:focus-visible,
+.air-quality-refresh-btn.v-btn--focused,
+.air-quality-refresh-btn:active,
+.air-quality-refresh-btn.v-btn--active {
+  box-shadow: 0 0 0 2px rgb(var(--v-theme-primary)) !important;
+  border-radius: 50% !important;
+}
+
+/* HOVER STATE - MAINTAINS CIRCLE SHAPE */
+.air-quality-refresh-btn:hover {
+  background-color: rgba(var(--v-theme-on-surface), 0.08) !important;
+  border-radius: 50% !important;
+}
+
+/* ACTIVE STATE - MAINTAINS CIRCLE SHAPE WITH SCALE */
+.air-quality-refresh-btn:active,
+.air-quality-refresh-btn.v-btn--active {
+  background-color: rgba(var(--v-theme-on-surface), 0.12) !important;
+  transform: scale(0.95) !important;
+  border-radius: 50% !important;
+}
+
+/* ENSURE ICON STAYS CENTERED AND RESPONSIVE */
+.air-quality-refresh-btn .v-icon {
+  margin: 0 !important;
+  font-size: clamp(1rem, 3vw, 1.2rem) !important;
+  z-index: 2 !important;
+  position: relative !important;
+}
+
+/* JAVASCRIPT EVENT HANDLERS - Force blue border */
+.air-quality-refresh-btn.btn-clicked::after {
+  border-color: rgb(var(--v-theme-primary)) !important;
+  border-width: 2px !important;
+}
+
+.air-quality-refresh-btn.btn-clicked {
+  box-shadow: 0 0 0 2px rgb(var(--v-theme-primary)) !important;
+}
+
+/* RESPONSIVE BREAKPOINTS FOR PERFECT CIRCLES */
+
+/* Desktop - Larger circle */
+@media (min-width: 1024px) {
+  .air-quality-refresh-btn {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    max-width: 32px !important;
+    max-height: 32px !important;
+  }
+  
+  .air-quality-refresh-btn .v-icon {
+    font-size: 1.1rem !important;
+  }
+  
+  .air-quality-refresh-btn::after {
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+  }
+}
+
+/* Tablet - Medium circle */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .air-quality-refresh-btn {
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 30px !important;
+    min-height: 30px !important;
+    max-width: 30px !important;
+    max-height: 30px !important;
+  }
+  
+  .air-quality-refresh-btn .v-icon {
+    font-size: 1rem !important;
+  }
+  
+  .air-quality-refresh-btn::after {
+    top: -2.5px;
+    left: -2.5px;
+    right: -2.5px;
+    bottom: -2.5px;
+  }
+}
+
+/* Mobile - Smaller but still perfectly circular */
+@media (max-width: 767px) {
+  .air-quality-refresh-btn {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    min-height: 28px !important;
+    max-width: 28px !important;
+    max-height: 28px !important;
+  }
+  
+  .air-quality-refresh-btn .v-icon {
+    font-size: 0.9rem !important;
+  }
+  
+  .air-quality-refresh-btn::after {
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-width: 1.5px;
+  }
+  
+  .air-quality-refresh-btn:focus-visible,
+  .air-quality-refresh-btn.v-btn--focused,
+  .air-quality-refresh-btn:active,
+  .air-quality-refresh-btn.v-btn--active {
+    box-shadow: 0 0 0 1.5px rgb(var(--v-theme-primary)) !important;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+  .air-quality-refresh-btn {
+    width: 26px !important;
+    height: 26px !important;
+    min-width: 26px !important;
+    min-height: 26px !important;
+    max-width: 26px !important;
+    max-height: 26px !important;
+  }
+  
+  .air-quality-refresh-btn .v-icon {
+    font-size: 0.85rem !important;
+  }
+  
+  .air-quality-refresh-btn::after {
+    top: -1.5px;
+    left: -1.5px;
+    right: -1.5px;
+    bottom: -1.5px;
+    border-width: 1.5px;
+  }
+}
+
+/* HIGH CONTRAST MODE - MAINTAINS CIRCLE WITH STRONGER BORDER */
+@media (prefers-contrast: high) {
+  .air-quality-refresh-btn::after {
+    border-width: 3px;
+  }
+  
+  .air-quality-refresh-btn:focus-visible,
+  .air-quality-refresh-btn.v-btn--focused,
+  .air-quality-refresh-btn:active,
+  .air-quality-refresh-btn.v-btn--active {
+    box-shadow: 0 0 0 3px rgb(var(--v-theme-primary)) !important;
+    border-radius: 50% !important;
+  }
+}
+
+/* FORCE CIRCULAR SHAPE ON ALL VUETIFY BUTTON STATES */
+.air-quality-refresh-btn:hover:deep(.v-btn__overlay),
+.air-quality-refresh-btn:focus:deep(.v-btn__overlay),
+.air-quality-refresh-btn:active:deep(.v-btn__overlay),
+.air-quality-refresh-btn.v-btn--focused:deep(.v-btn__overlay),
+.air-quality-refresh-btn.v-btn--active:deep(.v-btn__overlay) {
+  border-radius: 50% !important;
+}
+
+/* OVERRIDE VUETIFY DEFAULT FOCUS STYLES */
+.air-quality-refresh-btn.v-btn--variant-text:focus {
+  box-shadow: 0 0 0 2px rgb(var(--v-theme-primary)) !important;
+}
+
+.air-quality-refresh-btn.v-btn--variant-text:active {
+  box-shadow: 0 0 0 2px rgb(var(--v-theme-primary)) !important;
+}
+
+/* ENSURE BORDER APPEARS ON TAB FOCUS */
+.air-quality-refresh-btn[tabindex]:focus {
+  box-shadow: 0 0 0 2px rgb(var(--v-theme-primary)) !important;
+  outline: none !important;
+}
+
+/* DARK THEME SPECIFIC ADJUSTMENTS */
+.v-theme--dark .air-quality-refresh-btn::after {
+  border-color: transparent;
+}
+
+.v-theme--dark .air-quality-refresh-btn:focus-visible::after,
+.v-theme--dark .air-quality-refresh-btn.v-btn--focused::after,
+.v-theme--dark .air-quality-refresh-btn:active::after,
+.v-theme--dark .air-quality-refresh-btn.v-btn--active::after {
+  border-color: rgb(var(--v-theme-primary)) !important;
+}
+
 .aqi-score-section {
   display: flex;
   flex-direction: column;
@@ -1606,7 +1910,8 @@ export default {
   .animate-fade-in,
   .snackbar-fade-enter-active,
   .snackbar-fade-leave-active,
-  .custom-snackbar {
+  .custom-snackbar,
+  .air-quality-refresh-btn {
     animation: none !important;
     transition: none !important;
   }
