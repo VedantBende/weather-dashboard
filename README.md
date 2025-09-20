@@ -166,7 +166,7 @@ Follow these steps to set up the project on your local machine:
 
 ```bash
 # Clone the repository from GitHub
-git clone https://github.com/your-username/weather-dashboard.git
+git clone https://github.com/VedantBende/weather-dashboard.git
 
 # Move into the project directory
 cd weather-dashboard
@@ -188,10 +188,10 @@ npm install
 
 ### 3️⃣ Configure Environment Variables
 
-1. Copy the provided `.env.example` file:
+1. Copy the provided `.env` file:
 
    ```bash
-   cp .env.example .env
+   cp .env .env.local
    ```
 
 2. Open `.env` in a text editor and add your API key:
