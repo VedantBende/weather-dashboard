@@ -901,7 +901,8 @@ export default {
 </script>
 
 <style scoped>
-/* ===== THEME-AWARE STYLING - LIGHT & DARK MODE OPTIMIZED ===== */
+
+/* THEME-AWARE STYLING - LIGHT & DARK MODE OPTIMIZED */
 
 /* Base responsive container */
 .dashboard-page {
@@ -1029,7 +1030,7 @@ export default {
   opacity: 0.9 !important;
 }
 
-/* ===== RESPONSIVE BREAKPOINTS ===== */
+/* RESPONSIVE BREAKPOINTS */
 
 /* Large Desktop (1024px - 1199px) */
 @media (min-width: 1024px) and (max-width: 1199px) {
@@ -1143,7 +1144,7 @@ export default {
   }
 }
 
-/* ===== MAIN CONTENT STYLING ===== */
+/* MAIN CONTENT STYLING */
 
 .loading-container,
 .error-container {
@@ -1179,7 +1180,8 @@ export default {
   border: 1px solid rgba(var(--v-border-color), 0.12);
 }
 
-/* ===== AIR QUALITY CARD ===== */
+/* AIR QUALITY CARD */
+
 .air-quality-card-complete {
   background: rgba(var(--v-theme-surface), 0.8) !important;
   border-radius: clamp(12px, 2vw, 16px) !important;
@@ -1529,7 +1531,8 @@ export default {
   font-weight: 500 !important;
 }
 
-/* ===== QUICK ACTIONS CARD ===== */
+/* QUICK ACTIONS CARD */
+
 .quick-actions-card-compact {
   background: rgba(var(--v-theme-surface), 0.8) !important;
   border-radius: clamp(12px, 2vw, 16px) !important;
@@ -1587,7 +1590,8 @@ export default {
   height: 100%;
 }
 
-/* ===== OTHER COMPONENTS ===== */
+/* OTHER COMPONENTS */
+
 .forecast-chart-row {
   margin: 0 -8px -16px -8px;
 }
@@ -1732,7 +1736,8 @@ export default {
   min-width: clamp(80px, 20vw, 100px);
 }
 
-/* ===== CUSTOM SNACKBAR ===== */
+/* CUSTOM SNACKBAR */
+
 .custom-snackbar {
   position: fixed !important;
   z-index: 10000 !important;

@@ -249,7 +249,7 @@ export default {
       showSnackbar: false,
       snackbarMessage: '',
       snackbarColor: 'success',
-      // API Key - Replace with your actual key
+      // API Key
       apiKey: import.meta.env.VITE_OPENWEATHER_API_KEY || "67a172fd6aac31aee1c6644d11e18130",
       // Popular cities
       popularCities: [

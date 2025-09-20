@@ -506,7 +506,7 @@ export default {
     convertTemperature(kelvinTemp) {
       const unit = this.weatherStore?.unit || 'celsius'
       
-      // Check if temperature is already in celsius (API sometimes returns celsius directly)
+      // Checks if temperature is already in celsius (Because API sometimes returns celsius directly)
       if (kelvinTemp > 200) {
         // Temperature is in Kelvin, convert it
         if (unit === 'fahrenheit') {

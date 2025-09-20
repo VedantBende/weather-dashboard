@@ -518,9 +518,6 @@ export default {
 </script>
 
 <style scoped>
-/* =================== 
-   WIND ICON ROTATION - HIGHEST PRIORITY
-   =================== */
 
 /* Wind icon rotation with maximum specificity */
 .v-icon.wind-icon,
@@ -536,11 +533,7 @@ export default {
   transform: rotate(180deg) !important;
 }
 
-/* =================== 
-   ICON ANIMATIONS DISABLED (EXCEPT WIND ICON)
-   =================== */
-
-/* Disable all animations and transitions on v-icon components except wind-icon */
+/* Disabled all animations and transitions on v-icon components except wind-icon */
 .v-icon:not(.wind-icon),
 .v-icon:not(.wind-icon) svg,
 .v-icon:not(.wind-icon)::before,
@@ -550,7 +543,7 @@ export default {
   transform: none !important;
 }
 
-/* Disable hover and focus effects on icons except wind-icon */
+/* Disabled hover and focus effects on icons except wind-icon */
 .v-icon:not(.wind-icon):hover,
 .v-icon:not(.wind-icon):focus,
 .v-icon:not(.wind-icon):active {
@@ -560,7 +553,7 @@ export default {
   opacity: 1 !important;
 }
 
-/* Disable all child element animations within icons except wind-icon */
+/* Disabled all child element animations within icons except wind-icon */
 .v-icon:not(.wind-icon) *,
 .v-icon:not(.wind-icon) *::before,
 .v-icon:not(.wind-icon) *::after {
@@ -589,7 +582,7 @@ export default {
   transform: none !important;
 }
 
-/* Disable icon-related keyframe animations */
+/* Disabled icon-related keyframe animations */
 @keyframes iconBounceEnhanced {
   0%, 100% {
     transform: none !important;
@@ -670,9 +663,7 @@ export default {
   }
 }
 
-/* =================== 
-   MAIN COMPONENT STYLES 
-   =================== */
+/* MAIN COMPONENT STYLES  */
 
 .weather-details-card {
   border-radius: 16px;
@@ -835,9 +826,7 @@ export default {
   text-align: right;
 }
 
-/* =================== 
-   ENHANCED ANIMATIONS & INTERACTIONS (EXCLUDING ICONS)
-   =================== */
+/* ENHANCED ANIMATIONS & INTERACTIONS (EXCLUDING ICONS) */
 
 /* Main card entrance with bounce */
 .card-entrance {

@@ -222,7 +222,7 @@ export default {
       // FIXED: Use reactive Maps for proper Vue reactivity
       favoriteWeatherData: reactive(new Map()),
       loadingStates: reactive(new Map()),
-      // API Key - Replace with your actual key
+      // API Key
       apiKey: import.meta.env.VITE_OPENWEATHER_API_KEY || "b8e1a5c9d4f2e8b7a1c3d5e9f8b2c4a6",
       navigationItems: [
         {

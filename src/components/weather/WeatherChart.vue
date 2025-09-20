@@ -833,10 +833,8 @@ export default {
 </script>
 
 <style scoped>
-/* All existing styles remain unchanged */
-/* ===================
-   RESPONSIVE FOUNDATION
-   =================== */
+
+/* RESPONSIVE FOUNDATION */
 
 .weather-chart-card {
   border-radius: 20px;
@@ -853,9 +851,9 @@ export default {
   box-sizing: border-box;
 }
 
-/* ===================
-   BUTTON TOGGLE FIXES - ALIGNED BORDERS
-   =================== */
+
+/* BUTTON TOGGLE FIXES - ALIGNED BORDERS */
+
 
 .v-btn-toggle {
   display: inline-flex !important;
@@ -879,23 +877,23 @@ export default {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-/* Fix active button border alignment */
+/* Fixed active button border alignment */
 .v-btn-toggle .v-btn.v-btn--active {
   border: 2px solid rgb(var(--v-theme-primary)) !important;
   background-color: rgba(var(--v-theme-primary), 0.1) !important;
   box-shadow: none !important;
   outline: none !important;
-  /* Adjust padding to compensate for thicker border */
+  /* Adjusted padding to compensate for thicker border */
   padding: 0 11px !important;
 }
 
-/* Remove focus styles that can misalign border */
+/* Removed focus styles that can misalign border */
 .v-btn-toggle .v-btn:focus {
   outline: none !important;
   box-shadow: none !important;
 }
 
-/* Fix icon and text alignment within buttons */
+/* Fixed icon and text alignment within buttons */
 .v-btn-toggle .v-btn .v-btn__content {
   display: flex !important;
   align-items: center !important;
@@ -1338,9 +1336,7 @@ export default {
   font-size: clamp(0.7rem, 1.4vw, 0.8rem);
 }
 
-/* ===================
-   RESPONSIVE BREAKPOINTS
-   =================== */
+ /* RESPONSIVE BREAKPOINTS */
 
 /* Extra small devices (portrait phones, ≤320px) */
 @media (max-width: 320px) {

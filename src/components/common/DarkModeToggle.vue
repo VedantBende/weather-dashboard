@@ -153,7 +153,6 @@ export default {
 }
 </style>
 
-<!-- Add this global CSS to your main.css or App.vue -->
 <style>
 /* CRITICAL: Global synchronized theme transitions */
 :root {

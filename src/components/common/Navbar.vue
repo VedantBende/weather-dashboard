@@ -564,10 +564,6 @@ export default {
 }
 .current-weather-info:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12); }
 
-/* =================== 
-   FIXED BUTTON STYLES - BORDER ALIGNMENT FIX
-   =================== */
-
 /* Navigation icon button with fixed alignment */
 .nav-icon-btn {
   border-radius: 8px !important;
@@ -683,10 +679,6 @@ export default {
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15) !important;
 }
 .help-panels :deep(.v-expansion-panel) { border-radius: 8px !important; margin-bottom: 8px !important; }
-
-/* ---------------------------
-   Responsive Optimizations with Fixed Button Sizes
-   --------------------------- */
 
 /* Ultra‑small phones (≤360px) */
 @media (max-width: 360px) {
