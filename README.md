@@ -38,43 +38,106 @@ Deliver a quick, reliable, and accessible way to check weather conditions, forec
 ## 📂 Project Structure
 
 ```
-public/                  # 📁 Static files
-├─ icons/                # 🖼️ PWA icons & shortcuts
-├─ robots.txt            # 🤖 Indexing rules
-├─ manifest.json         # 📲 Web app manifest
-└─ index.html            # 🌐 Application HTML shell
-
-src/                     # 🧩 Application source
-├─ app/                  # ⚙️ App-level setup
-│   ├─ router/           # 🛣️ Routes & guards
-│   ├─ store/            # 📦 Pinia stores (weather, settings, UI)
-│   ├─ plugins/          # 🔌 Vuetify, PWA, analytics
-│   ├─ services/         # 🌐 API integrations
-│   ├─ composables/      # ♻️ Reusable logic hooks
-│   ├─ config/           # ⚙️ Configurations
-│   ├─ utils/            # 🔧 Helpers (format, validate, cache)
-│   └─ types/            # 📑 Global TypeScript types & DTOs
+weather-dashboard/                  # 📁 Project root
 │
-├─ components/           # 🧱 Reusable UI
-│   ├─ common/           # 🔘 Buttons, cards, loaders
-│   ├─ layout/           # 🖼️ Shell, header, nav, footer
-│   ├─ weather/          # 🌦️ Search, cards, charts
-│   └─ feedback/         # 🔔 Alerts, snackbars, messages
+├── .git/                           # 🔧 Git repo config
+├── .vscode/                        # 📝 VSCode workspace settings
+├── dist/                           # 📦 Production build
+├── e2e/                            # 🧪 End-to-end tests
+│   ├── tsconfig.json
+│   └── vue.spec.ts
+├── node_modules/                   # 📚 Dependencies
 │
-├─ views/                # 📄 Pages (Dashboard, Favorites, Settings)
-├─ styles/               # 🎨 Global styles & themes
-├─ assets/               # 🖼️ Images & SVGs
-└─ main.ts               # 🚀 App entry point
+├── public/                         # 🌍 Public assets (served as-is)
+│   ├── favicon.ico
+│   └── logo.svg
+│
+├── src/                            # 🖥️ Source code
+│   ├── __tests__/                  # 🧪 Unit tests
+│   │   └── App.spec.ts
+│   │
+│   ├── assets/                     # 🎨 Images, icons, static media
+│   │   ├── bg/                     # 🏞️ Background images
+│   │   │   ├── clear.jpg
+│   │   │   ├── cloudy.jpg
+│   │   │   └── rainy.jpg
+│   │   ├── weather-icons/          # ☁️ Weather SVG icons
+│   │   │   ├── cloudy.svg
+│   │   │   ├── rainy.svg
+│   │   │   ├── snowy.svg
+│   │   │   └── sunny.svg
+│   │   └── logo.svg
+│   │
+│   ├── components/                 # ⚛️ Reusable Vue components
+│   │   ├── common/                 # 🔄 Layout/UI essentials
+│   │   │   ├── DarkModeToggle.vue
+│   │   │   ├── Footer.vue
+│   │   │   ├── Navbar.vue
+│   │   │   └── Sidebar.vue
+│   │   ├── ui/                     # 🎛️ UI helpers
+│   │   │   ├── ErrorMessage.vue
+│   │   │   └── Loader.vue
+│   │   ├── weather/                # 🌤️ Weather-specific components
+│   │   │   ├── WeatherCard.vue
+│   │   │   ├── WeatherChart.vue
+│   │   │   ├── WeatherDetails.vue
+│   │   │   └── WeatherSearch.vue
+│   │   └── AirQuality.vue
+│   │
+│   ├── layouts/                    # 🏗️ Page layouts
+│   │   └── DashboardLayout.vue
+│   │
+│   ├── pages/                      # 📄 Router pages
+│   │   ├── DashboardPage.vue
+│   │   ├── FavoritesPage.vue
+│   │   └── SettingsPage.vue
+│   │
+│   ├── router/                     # 🛣️ Vue Router setup
+│   │   ├── index.js
+│   │   └── index.ts
+│   │
+│   ├── store/                      # 🗃️ Vuex/Pinia (JS store)
+│   │   └── weather.js
+│   ├── stores/                     # 🗂️ Pinia (TS store)
+│   │   └── counter.ts
+│   │
+│   ├── styles/                     # 🎨 Global styles
+│   │   └── globals.css
+│   │
+│   ├── utils/                      # 🛠️ Helpers & utilities
+│   │   ├── api.js                  # 🌐 API calls
+│   │   ├── formatters.js           # 🔢 Data formatting
+│   │   └── geolocation.js          # 📍 Geolocation utilities
+│   │
+│   ├── App.vue                     # 🌟 Root Vue component
+│   ├── main.js                     # 🚀 JS entry point
+│   ├── main.ts                     # 🚀 TS entry point
+│   └── vue-shims.d.ts              # 📝 TS shims
+│
+├── .editorconfig                   # ✏️ Editor settings
+├── .env                            # 🔐 Env vars (dev)
+├── .env.production                 # 🔐 Env vars (prod)
+├── .gitattributes                  # 🔧 Git attributes
+├── .gitignore                      # 🚫 Git ignore rules
+├── .prettierrc.json                # 🎨 Prettier config
+├── CNAME                           # 🌐 Custom domain
+├── README.md                       # 📖 Project docs
+├── env.d.ts                        # 📝 TS env typing
+├── eslint.config.ts                # 🚨 ESLint config
+├── index.html                      # 🏠 App entry HTML
+├── package-lock.json               # 📦 Lockfile
+├── package.json                    # 📦 Project dependencies
+├── playwright.config.ts            # 🎭 Playwright config
+├── postcss.config.cjs              # 🎨 PostCSS config
+├── tailwind.config.js              # 🎨 TailwindCSS config
+├── tsconfig.*.json                 # ⚙️ TypeScript configs
+│   ├── tsconfig.app.json
+│   ├── tsconfig.json
+│   ├── tsconfig.node.json
+│   └── tsconfig.vitest.json
+├── vite.config.ts                  # ⚡ Vite config
+└── vitest.config.ts                # 🧪 Vitest config
 
-tests/                   # 🧪 Testing
-├─ unit/                 # 🧩 Unit tests (Vitest)
-└─ e2e/                  # 🌍 End-to-end tests (Playwright)
-
-.env.example             # 🔑 Env variables template
-package.json             # 📦 Scripts & dependencies
-vite.config.js           # ⚙️ Build & PWA config
-tsconfig.json            # 📑 TS configuration
-README.md                # 📖 Documentation
 ```
 
 ---
